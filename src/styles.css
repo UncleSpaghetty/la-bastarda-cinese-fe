@@ -9,6 +9,9 @@ button:focus-visible, a:focus-visible { outline: 3px solid #d8b4fe; outline-offs
 .app-header { height: 72px; max-width: 1200px; margin: auto; padding: 0 24px; display: flex; align-items: center; gap: 12px; }
 .brand-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: #ff796c; color: #17122f; font-weight: 900; transform: rotate(-4deg); }
 .brand-name { font-weight: 750; letter-spacing: -.02em; }
+.app-nav { display: flex; gap: 14px; margin-left: 20px; }.app-nav a { color: #c8c7db; text-decoration: none; }.app-nav a:hover { color: white; }
+.account-grid { display: grid; gap: 16px; }.account-grid h2 { margin: 0; }
+.form-stack input { min-height: 48px; border: 1px solid #ffffff24; background: #0b1028; color: white; border-radius: 12px; padding: 0 14px; }
 .connection-status { margin-left: auto; display: flex; align-items: center; gap: 7px; color: #bbb9d5; font-size: .85rem; }
 .skip-link { position: fixed; left: 12px; top: -100px; z-index: 20; padding: 10px 14px; background: white; color: #111837; border-radius: 8px; }
 .skip-link:focus { top: 12px; }
