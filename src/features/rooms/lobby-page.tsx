@@ -1,13 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useParams } from "react-router";
+import { useEffect } from "react";
+import { useNavigate, useParams } from "react-router";
 
 import { getRoom, setReady } from "./api";
 
 export function LobbyPage() {
   const { id = "" } = useParams();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const room = useQuery({ queryKey: ["room", id], queryFn: () => getRoom(id), refetchInterval: 2_000 });
   const ready = useMutation({ mutationFn: (value: boolean) => setReady(id, value), onSuccess: (value) => queryClient.setQueryData(["room", id], value) });
+  useEffect(() => {
+    if (room.data?.status === "STARTED" && room.data.match_id) navigate(`/matches/${room.data.match_id}/setup`, { replace: true });
+  }, [navigate, room.data]);
   if (room.isLoading) return <section className="form-page"><p>Caricamento lobby…</p></section>;
   if (!room.data) return <section className="form-page"><p role="alert">Lobby non disponibile.</p></section>;
   const players = room.data.members.filter((member) => member.role === "PLAYER");

@@ -3,6 +3,7 @@ import { apiRequest } from "../../lib/api/client";
 export type RoomState = {
   id: string;
   status: "LOBBY" | "STARTED" | "CLOSED";
+  match_id: string | null;
   settings_version: number;
   countdown_deadline: string | null;
   settings: { preset: string; max_players: number; turn_seconds: number; max_consecutive_timeouts: number };
