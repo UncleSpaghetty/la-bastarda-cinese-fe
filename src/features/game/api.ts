@@ -7,7 +7,7 @@ export type PlayerView = {
 };
 export type MatchState = {
   match_id: string; state_version: number; deadline: string | null;
-  payload: { phase: string; players: PlayerView[]; deck_count: number; table_cards: PlayingCard[] };
+  payload: { phase: string; players: PlayerView[]; deck_count: number; table_cards: PlayingCard[]; turn_seat: number | null };
 };
 
 export function getMatch(id: string) { return apiRequest<MatchState>(`/matches/${id}/snapshot`); }
@@ -15,3 +15,9 @@ export function swapCards(id: string, handIds: string[], faceUpIds: string[]) {
   return apiRequest(`/matches/${id}/setup/swap`, { method: "POST", body: JSON.stringify({ hand_ids: handIds, face_up_ids: faceUpIds }) });
 }
 export function confirmCards(id: string) { return apiRequest(`/matches/${id}/setup/confirm`, { method: "POST", body: "{}" }); }
+export function sendCommand(id: string, stateVersion: number, command: string, payload: object) {
+  return apiRequest(`/matches/${id}/commands`, {
+    method: "POST",
+    body: JSON.stringify({ command_id: crypto.randomUUID(), expected_version: stateVersion, command, payload }),
+  });
+}
