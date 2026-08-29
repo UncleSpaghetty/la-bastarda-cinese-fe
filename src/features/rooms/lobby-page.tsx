@@ -6,13 +6,19 @@ import { getRoom, setReady } from "./api";
 import type { RoomState } from "./api";
 import { RealtimeClient } from "../../lib/realtime/realtime-client";
 import { useConnectionStore } from "../../stores/connection-store";
+import { ApiError } from "../../lib/api/client";
 
 export function LobbyPage() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const setConnection = useConnectionStore((value) => value.setStatus);
-  const room = useQuery({ queryKey: ["room", id], queryFn: () => getRoom(id), refetchInterval: 2_000 });
+  const room = useQuery({
+    queryKey: ["room", id],
+    queryFn: () => getRoom(id),
+    refetchInterval: 2_000,
+    retry: (failureCount, error) => !(error instanceof ApiError && error.status === 404) && failureCount < 2,
+  });
   const ready = useMutation({ mutationFn: (value: boolean) => setReady(id, value), onSuccess: (value) => queryClient.setQueryData(["room", id], value) });
   useEffect(() => {
     const base = import.meta.env.VITE_WS_URL ?? "ws://localhost:8000/ws/v1";
@@ -27,7 +33,8 @@ export function LobbyPage() {
   }, [id, queryClient, setConnection]);
   useEffect(() => {
     if (room.data?.status === "STARTED" && room.data.match_id) navigate(`/matches/${room.data.match_id}/setup`, { replace: true });
-  }, [navigate, room.data]);
+    if (room.error instanceof ApiError && room.error.status === 404) navigate("/", { replace: true });
+  }, [navigate, room.data, room.error]);
   if (room.isLoading) return <section className="form-page"><p>Caricamento lobby…</p></section>;
   if (!room.data) return <section className="form-page"><p role="alert">Lobby non disponibile.</p></section>;
   const players = room.data.members.filter((member) => member.role === "PLAYER");
