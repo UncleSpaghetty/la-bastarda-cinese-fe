@@ -1,14 +1,18 @@
+import { Menu, X } from "lucide-react";
+import { useState } from "react";
 import { Link, Outlet } from "react-router";
 
 import { ConnectionStatus } from "@/components/realtime/connection-status";
 
 export function AppShell() {
+  const [open, setOpen] = useState(false);
+  const close = () => setOpen(false);
   return <div className="min-h-dvh bg-app text-foreground">
     <a href="#main" className="skip-link">Vai al contenuto</a>
     <header className="app-header">
-      <div className="brand-mark" aria-hidden="true">B</div>
-      <span className="brand-name">La bastarda cinese</span>
-      <nav className="app-nav"><Link to="/">Home</Link><Link to="/profile">Account</Link><Link to="/history">Storico</Link></nav>
+      <Link to="/" className="brand-link" onClick={close}><span className="brand-mark" aria-hidden="true">B</span><span className="brand-name">La bastarda cinese</span></Link>
+      <button className="nav-toggle" type="button" aria-expanded={open} aria-controls="main-navigation" aria-label={open ? "Chiudi menu" : "Apri menu"} onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button>
+      <nav id="main-navigation" className={`app-nav ${open ? "is-open" : ""}`}><Link to="/" onClick={close}>Home</Link><Link to="/profile" onClick={close}>Account</Link><Link to="/history" onClick={close}>Storico</Link></nav>
       <ConnectionStatus />
     </header>
     <main id="main"><Outlet /></main>

@@ -4,9 +4,10 @@ export type RoomState = {
   id: string;
   status: "LOBBY" | "STARTED" | "CLOSED";
   match_id: string | null;
+  self_membership_id: string | null;
   settings_version: number;
   countdown_deadline: string | null;
-  settings: { preset: string; max_players: number; turn_seconds: number; max_consecutive_timeouts: number };
+  settings: { preset: string; max_players: number; turn_seconds: number; warning_seconds: number; max_consecutive_timeouts: number; spectators_enabled: boolean; max_spectators: number };
   members: { id: string; display_name: string; avatar_seed: string; role: "PLAYER" | "SPECTATOR"; ready: boolean; connected: boolean; is_host: boolean }[];
   invite_token?: string;
 };
@@ -26,4 +27,11 @@ export function joinRoom(token: string, displayName: string, role: "PLAYER" | "S
 export function getRoom(id: string) { return apiRequest<RoomState>(`/rooms/${id}`); }
 export function setReady(id: string, ready: boolean) {
   return apiRequest<RoomState>(`/rooms/${id}/membership`, { method: "PATCH", body: JSON.stringify({ ready }) });
+}
+export type RoomSettingsInput = RoomState["settings"];
+export function updateRoomSettings(id: string, expectedVersion: number, settings: RoomSettingsInput) {
+  return apiRequest<RoomState>(`/rooms/${id}/settings`, {
+    method: "PATCH",
+    body: JSON.stringify({ expected_version: expectedVersion, ...settings }),
+  });
 }
