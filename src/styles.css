@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+:root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #f7f5ff; background: #0b1028; font-synthesis: none; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; }
+button, a { font: inherit; }
+button:focus-visible, a:focus-visible { outline: 3px solid #d8b4fe; outline-offset: 3px; }
+.bg-app { background: radial-gradient(circle at 75% 25%, #24215c 0, #111837 34%, #0b1028 72%); }
+.app-header { height: 72px; max-width: 1200px; margin: auto; padding: 0 24px; display: flex; align-items: center; gap: 12px; }
+.brand-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: #ff796c; color: #17122f; font-weight: 900; transform: rotate(-4deg); }
+.brand-name { font-weight: 750; letter-spacing: -.02em; }
+.connection-status { margin-left: auto; display: flex; align-items: center; gap: 7px; color: #bbb9d5; font-size: .85rem; }
+.skip-link { position: fixed; left: 12px; top: -100px; z-index: 20; padding: 10px 14px; background: white; color: #111837; border-radius: 8px; }
+.skip-link:focus { top: 12px; }
+.hero { max-width: 1200px; min-height: calc(100dvh - 72px); margin: auto; padding: 56px 24px 96px; display: grid; grid-template-columns: 1.05fr .95fr; align-items: center; gap: 72px; }
+.eyebrow { color: #ff9a8f; font-weight: 800; text-transform: uppercase; letter-spacing: .14em; font-size: .75rem; }
+h1 { margin: 12px 0 22px; max-width: 760px; font-size: clamp(2.7rem, 6vw, 5.8rem); line-height: .97; letter-spacing: -.055em; }
+.hero-lead { max-width: 620px; color: #c8c7db; font-size: clamp(1rem, 2vw, 1.2rem); line-height: 1.7; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 32px 0; }
+.button { min-height: 48px; padding: 0 20px; border: 1px solid transparent; border-radius: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font-weight: 750; }
+.button-primary { background: #ff796c; color: #17122f; box-shadow: 0 12px 30px #ff796c2c; }
+.button-secondary { background: #ffffff0a; border-color: #ffffff24; color: #f7f5ff; }
+.trust-list { padding: 0; display: flex; flex-wrap: wrap; gap: 24px; list-style: none; color: #bbb9d5; font-size: .9rem; }
+.trust-list li { display: flex; align-items: center; gap: 8px; }.trust-list svg { color: #c7a7ff; }
+.table-preview { position: relative; aspect-ratio: 1.15; border: 1px solid #ffffff1a; border-radius: 48%; background: radial-gradient(circle, #384080 0, #222959 45%, #191e45 70%); box-shadow: inset 0 0 80px #090c22aa, 0 28px 80px #05071899; }
+.table-preview > p { position: absolute; bottom: 16%; width: 100%; text-align: center; color: #8f91b7; text-transform: uppercase; letter-spacing: .2em; font-size: .65rem; }
+.playing-card, .deck { position: absolute; width: 112px; aspect-ratio: .7; border-radius: 13px; display: flex; flex-direction: column; padding: 11px; font-weight: 850; font-size: 1.25rem; box-shadow: 0 18px 34px #080b22aa; }
+.playing-card { background: #fffdf7; color: #1c2246; }.card-one { left: 32%; top: 31%; transform: rotate(-8deg); color: #d95454; }.card-two { left: 45%; top: 29%; transform: rotate(7deg); }.deck { right: 13%; top: 34%; background: repeating-linear-gradient(45deg, #846cc4, #846cc4 4px, #6c55af 4px, #6c55af 8px); border: 4px solid #d7caff; align-items: center; justify-content: center; color: white; }
+.avatar { position: absolute; width: 54px; height: 54px; border-radius: 18px; display: grid; place-items: center; font-weight: 900; border: 3px solid #111837; }.avatar-lilac { top: 4%; left: 44%; background: #c7a7ff; color: #272048; }.avatar-coral { bottom: 4%; left: 44%; background: #ff796c; color: #371c2b; }
+.placeholder { max-width: 900px; margin: auto; padding: 96px 24px; }.placeholder h1 { font-size: clamp(2.6rem, 7vw, 5rem); }.placeholder > p:last-child { color: #bbb9d5; }
+@media (max-width: 800px) { .hero { grid-template-columns: 1fr; padding-top: 38px; gap: 48px; }.table-preview { width: min(100%, 520px); margin: auto; }.brand-name { font-size: .9rem; }.playing-card, .deck { width: 82px; }.trust-list { display: grid; gap: 12px; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
