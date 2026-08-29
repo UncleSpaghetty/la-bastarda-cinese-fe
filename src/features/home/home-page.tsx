@@ -1,13 +1,22 @@
 import { ArrowRight, ShieldCheck, Users } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router";
+
+import { createRoom, ensureGuest } from "../rooms/api";
 
 export function HomePage() {
+  const navigate = useNavigate();
+  const mutation = useMutation({ mutationFn: async () => {
+    await ensureGuest();
+    return createRoom(localStorage.getItem("lbc_alias") ?? "Host");
+  }, onSuccess: (room) => navigate(`/rooms/${room.id}`) });
   return <section className="hero">
     <div className="hero-copy">
       <p className="eyebrow">Carte, amici, nessun bluff del client.</p>
       <h1>Il tavolo digitale per la vostra serata.</h1>
       <p className="hero-lead">Stanze private, partite realtime e regole gestite dal server. Da quattro a dieci giocatori, con posto anche per chi vuole guardare.</p>
       <div className="hero-actions">
-        <button className="button button-primary" type="button">Crea una stanza <ArrowRight size={18} /></button>
+        <button className="button button-primary" type="button" onClick={() => mutation.mutate()} disabled={mutation.isPending}>Crea una stanza <ArrowRight size={18} /></button>
         <button className="button button-secondary" type="button">Ho un invito</button>
       </div>
       <ul className="trust-list" aria-label="Caratteristiche principali">
