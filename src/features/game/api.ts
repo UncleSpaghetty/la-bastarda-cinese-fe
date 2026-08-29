@@ -2,8 +2,9 @@ import { apiRequest } from "../../lib/api/client";
 
 export type PlayingCard = { id: string; rank: string; suit: string; position?: number };
 export type PlayerView = {
-  id: string; display_name: string; seat_index: number; public_face_up_cards: PlayingCard[];
+  id: string; display_name: string; seat_index: number; status: string; reentry_count: number; public_face_up_cards: PlayingCard[];
   total_card_count: number; private_hand?: PlayingCard[]; own_face_down?: PlayingCard[];
+  privately_seen_face_down_card?: PlayingCard;
 };
 export type MatchState = {
   match_id: string; state_version: number; deadline: string | null;

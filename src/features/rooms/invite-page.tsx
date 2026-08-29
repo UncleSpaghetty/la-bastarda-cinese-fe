@@ -13,7 +13,10 @@ export function InvitePage() {
     await ensureGuest();
     localStorage.setItem("lbc_alias", name);
     return joinRoom(token, name, role);
-  }, onSuccess: (room) => navigate(`/rooms/${room.id}`) });
+  }, onSuccess: (room) => {
+    sessionStorage.setItem(`lbc_invite_${room.id}`, token);
+    navigate(room.status === "STARTED" && room.match_id ? `/matches/${room.match_id}` : `/rooms/${room.id}`);
+  } });
   return <section className="form-page"><p className="eyebrow">Invito privato</p><h1>Prendi posto.</h1>
     <form onSubmit={(event) => { event.preventDefault(); mutation.mutate(); }} className="panel form-stack">
       <label>Nome pubblico<input value={name} minLength={2} maxLength={32} onChange={(event) => setName(event.target.value)} required /></label>

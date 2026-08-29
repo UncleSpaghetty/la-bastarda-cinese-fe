@@ -9,4 +9,6 @@ export function Card({ card, selected = false, onClick }: { card: PlayingCard; s
   </button>;
 }
 
-export function CardBack() { return <div className="game-card card-back" aria-label="Carta coperta"><span>B</span></div>; }
+export function CardBack({ onClick, revealed = false }: { onClick?: () => void; revealed?: boolean }) {
+  return <button type="button" className={`game-card card-back ${revealed ? "selected-card" : ""}`} aria-label={revealed ? "Carta coperta spiata, seleziona per giocarla" : "Spia carta coperta"} onClick={onClick}><span>{revealed ? "?" : "B"}</span></button>;
+}

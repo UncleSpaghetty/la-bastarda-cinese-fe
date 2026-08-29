@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
 import { Card, CardBack } from "../../components/game/card";
@@ -16,6 +16,9 @@ export function SetupPage() {
   const swap = useMutation({ mutationFn: () => swapCards(id, hand, up), onSuccess: refresh });
   const confirm = useMutation({ mutationFn: () => confirmCards(id), onSuccess: () => { refresh(); navigate(`/matches/${id}`); } });
   const own = state.data?.payload.players.find((player) => player.private_hand);
+  useEffect(() => {
+    if (state.data && !own) navigate(`/matches/${id}`, { replace: true });
+  }, [id, navigate, own, state.data]);
   if (!own) return <section className="form-page"><p>Preparazione delle carte…</p></section>;
   const toggle = (values: string[], set: (value: string[]) => void, cardId: string) => set(values.includes(cardId) ? values.filter((item) => item !== cardId) : values.length < 3 ? [...values, cardId] : values);
   return <section className="setup-page"><p className="eyebrow">Preparazione</p><h1>Scegli il tuo assetto.</h1><p className="muted">Puoi effettuare un solo scambio da zero a tre carte.</p>

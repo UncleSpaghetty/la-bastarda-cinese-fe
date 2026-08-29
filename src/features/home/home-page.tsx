@@ -9,7 +9,10 @@ export function HomePage() {
   const mutation = useMutation({ mutationFn: async () => {
     await ensureGuest();
     return createRoom(localStorage.getItem("lbc_alias") ?? "Host");
-  }, onSuccess: (room) => navigate(`/rooms/${room.id}`) });
+  }, onSuccess: (room) => {
+    if (room.invite_token) sessionStorage.setItem(`lbc_invite_${room.id}`, room.invite_token);
+    navigate(`/rooms/${room.id}`);
+  } });
   return <section className="hero">
     <div className="hero-copy">
       <p className="eyebrow">Carte, amici, nessun bluff del client.</p>
@@ -17,7 +20,10 @@ export function HomePage() {
       <p className="hero-lead">Stanze private, partite realtime e regole gestite dal server. Da quattro a dieci giocatori, con posto anche per chi vuole guardare.</p>
       <div className="hero-actions">
         <button className="button button-primary" type="button" onClick={() => mutation.mutate()} disabled={mutation.isPending}>Crea una stanza <ArrowRight size={18} /></button>
-        <button className="button button-secondary" type="button">Ho un invito</button>
+        <button className="button button-secondary" type="button" onClick={() => {
+          const token = window.prompt("Incolla il token di invito");
+          if (token?.trim()) navigate(`/invite/${token.trim()}`);
+        }}>Ho un invito</button>
       </div>
       <ul className="trust-list" aria-label="Caratteristiche principali">
         <li><ShieldCheck aria-hidden="true" /> Carte private protette</li>
