@@ -22,7 +22,7 @@ export function InvitePage() {
       <label>Nome pubblico<input value={name} minLength={2} maxLength={32} onChange={(event) => setName(event.target.value)} required /></label>
       <fieldset><legend>Come vuoi partecipare?</legend><div className="role-grid">
         <label><input type="radio" checked={role === "PLAYER"} onChange={() => setRole("PLAYER")} /> Giocatore</label>
-        <label><input type="radio" checked={role === "SPECTATOR"} onChange={() => setRole("SPECTATOR")} /> Spectator</label>
+        <label><input type="radio" checked={role === "SPECTATOR"} onChange={() => setRole("SPECTATOR")} /> Spettatore</label>
       </div></fieldset>
       {mutation.isError && <p role="alert">Non è stato possibile entrare nella stanza.</p>}
       <button className="button button-primary" disabled={mutation.isPending}>Entra nella lobby</button>

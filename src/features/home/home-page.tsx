@@ -27,7 +27,7 @@ export function HomePage() {
       </div>
       <ul className="trust-list" aria-label="Caratteristiche principali">
         <li><ShieldCheck aria-hidden="true" /> Carte private protette</li>
-        <li><Users aria-hidden="true" /> Giocatori e spectator</li>
+        <li><Users aria-hidden="true" /> Giocatori e spettatori</li>
       </ul>
     </div>
     <div className="table-preview" aria-label="Anteprima del tavolo da gioco">
