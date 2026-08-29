@@ -7,7 +7,11 @@ export type PlayerView = {
 };
 export type MatchState = {
   match_id: string; state_version: number; deadline: string | null;
-  payload: { phase: string; players: PlayerView[]; deck_count: number; table_cards: PlayingCard[]; turn_seat: number | null };
+  payload: {
+    phase: string; players: PlayerView[]; deck_count: number; table_cards: PlayingCard[]; turn_seat: number | null;
+    pending_effect?: { type: string; source_player_id?: string; target_player_id?: string } | null;
+    eligible_ace_targets?: { id: string; display_name: string; total_card_count: number }[];
+  };
 };
 
 export function getMatch(id: string) { return apiRequest<MatchState>(`/matches/${id}/snapshot`); }
