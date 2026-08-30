@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
 import { ActionFeedback } from "../../components/feedback/action-feedback";
+import { TurnTimer } from "../../components/game/turn-timer";
 import { ApiError } from "../../lib/api/client";
 import { RealtimeClient } from "../../lib/realtime/realtime-client";
 import { useConnectionStore } from "../../stores/connection-store";
@@ -40,7 +41,7 @@ export function LobbyPage() {
   return <section className="lobby-page"><div><p className="eyebrow">Lobby privata</p><h1>La serata comincia qui.</h1>
     <ActionFeedback message={feedback?.message} tone={feedback?.tone} />
     {inviteUrl ? <div className="panel invite-panel"><div><p className="eyebrow">Invita gli amici</p><p className="muted">Condividi il collegamento privato con chi vuoi al tavolo.</p></div><button className="button button-secondary" onClick={copyInvite}>Copia link d’invito</button></div> : null}
-    {room.data.countdown_deadline && <p className="countdown" role="status">Tutti pronti. La partita sta per iniziare…</p>}
+    {room.data.countdown_deadline && <div className="countdown panel" role="status"><strong>Tutti pronti. La partita sta per iniziare…</strong><TurnTimer deadline={room.data.countdown_deadline} label="Si parte tra" compact /></div>}
     <div className="member-grid">{room.data.members.map((member) => <article className="panel member" key={member.id}><div className="avatar-inline" aria-hidden="true">{member.display_name.slice(0, 2).toUpperCase()}</div><div><strong>{member.display_name}</strong><p>{member.role === "PLAYER" ? "Giocatore" : "Spettatore"}{member.is_host ? " · Host" : ""}</p></div><span className={member.ready && member.connected ? "ready" : "waiting"}>{!member.connected ? "Disconnesso" : member.ready ? "Pronto" : "In attesa"}</span></article>)}</div>
     <button className="button button-primary" onClick={() => ready.mutate(true)} disabled={ready.isPending || players.length < 4}>Sono pronto</button>
     {players.length < 4 && <p className="muted">Servono almeno quattro giocatori.</p>}
