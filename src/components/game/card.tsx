@@ -12,3 +12,10 @@ export function Card({ card, selected = false, onClick, animation }: { card: Pla
 export function CardBack({ onClick, revealed = false }: { onClick?: () => void; revealed?: boolean }) {
   return <button type="button" className={`game-card card-back ${revealed ? "selected-card" : ""}`} aria-label={revealed ? "Carta coperta spiata, seleziona per giocarla" : "Spia carta coperta"} onClick={onClick}><span>{revealed ? "?" : "B"}</span></button>;
 }
+
+export function PeekedCardHalf({ card, selected, onClick }: { card: PlayingCard; selected?: boolean; onClick: () => void }) {
+  const red = card.suit === "HEARTS" || card.suit === "DIAMONDS";
+  return <button type="button" className={`peeked-card-half ${red ? "red-card" : ""} ${selected ? "selected-card" : ""}`} onClick={onClick} aria-pressed={selected} aria-label={`Carta coperta spiata: ${card.rank} di ${card.suit}. Tocca per selezionarla`}>
+    <span className="peek-label">SPIATA</span><span className="peek-card-face"><strong>{card.rank}</strong><i>{suitSymbol[card.suit]}</i></span>
+  </button>;
+}

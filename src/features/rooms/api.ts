@@ -8,7 +8,7 @@ export type RoomState = {
   settings_version: number;
   countdown_deadline: string | null;
   settings: { preset: string; max_players: number; turn_seconds: number; warning_seconds: number; max_consecutive_timeouts: number; spectators_enabled: boolean; max_spectators: number };
-  members: { id: string; display_name: string; avatar_seed: string; role: "PLAYER" | "SPECTATOR"; ready: boolean; connected: boolean; is_host: boolean }[];
+  members: { id: string; display_name: string; avatar_seed: string; avatar_url?: string; role: "PLAYER" | "SPECTATOR"; ready: boolean; connected: boolean; is_host: boolean }[];
   invite_token?: string;
 };
 
