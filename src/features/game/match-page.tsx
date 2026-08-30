@@ -4,7 +4,8 @@ import { useNavigate, useParams } from "react-router";
 
 import { ActionFeedback } from "../../components/feedback/action-feedback";
 import { AceEffectModal } from "../../components/game/ace-effect-modal";
-import { Card, CardBack } from "../../components/game/card";
+import { Card, CardBack, PeekedCardHalf } from "../../components/game/card";
+import { PlayerAvatar } from "../../components/game/player-avatar";
 import { TurnTimer } from "../../components/game/turn-timer";
 import { apiErrorMessage } from "../../lib/api/client";
 import { RealtimeClient } from "../../lib/realtime/realtime-client";
@@ -15,13 +16,15 @@ import type { MatchState } from "./api";
 const statusLabel: Record<string, string> = {
   ACTIVE: "In gioco", FINISHED: "Ha chiuso", REENTERED: "Rientrato", RETIRED: "Ritirato", LOSER: "Ultimo classificato",
 };
-const specialCards: Record<string, { title: string; table: string }> = {
-  "2": { title: "Due trasparente! Il tavolo dimentica tutto. Che memoria comoda.", table: "Il 2 azzera il vincolo: puoi giocare qualsiasi valore." },
-  "7": { title: "Sette bastardo: adesso si vola basso.", table: "Sul 7 puoi giocare soltanto una carta pari o inferiore a 7." },
-  "8": { title: "Otto! Il prossimo salta. Riposi pure, campione.", table: "L'8 salta il turno del giocatore successivo." },
-  "10": { title: "Dieci: tavolo bruciato. Qualcuno qui si sente potente.", table: "Il 10 elimina tutte le carte presenti sul tavolo." },
-  A: { title: "Asso servito. Scegli a chi rovinare la giornata.", table: "Chi gioca l'asso sceglie il destinatario del tavolo." },
+const specialCards: Record<string, { messages: string[]; table: string }> = {
+  "2": { messages: ["Due trasparente: regole azzerate, talento ancora da trovare.", "Un 2 salva tutti. Perfino chi non lo meritava.", "Reset totale. La strategia era sopravvalutata comunque."], table: "Il 2 azzera il vincolo: puoi giocare qualsiasi valore." },
+  "7": { messages: ["Sette bastardo: adesso si vola basso. Come le aspettative.", "Sotto il sette, proprio dove sta il livello del tavolo.", "Il 7 ha abbassato l'asticella. Finalmente alla vostra portata."], table: "Sul 7 puoi giocare soltanto una carta pari o inferiore a 7." },
+  "8": { messages: ["Otto! Il prossimo salta. Una pausa dalla sua mediocrità.", "Turno saltato. Il tavolo ringrazia.", "L'8 ti ha ignorato con la stessa eleganza del gruppo chat."], table: "L'8 salta il turno del giocatore successivo." },
+  "10": { messages: ["Dieci: tavolo bruciato. Restano solo le vostre pessime scelte.", "Pulizia completa. Per la dignità è troppo tardi.", "Il 10 cancella il tavolo, non gli errori che vi hanno portato qui."], table: "Il 10 elimina tutte le carte presenti sul tavolo." },
+  A: { messages: ["Asso servito. Scegli a chi rovinare la giornata.", "Un asso e improvvisamente tutti evitano il contatto visivo.", "Passa il disastro a un amico. È questo il senso dell'amicizia."], table: "Chi gioca l'asso sceglie il destinatario del tavolo." },
 };
+const collectMessages = ["Tavolo raccolto. Un souvenir davvero ingombrante.", "Hai preso tutto. L'avidità, almeno, non ti manca.", "Che bella mano piena. Peccato sia piena di problemi.", "Raccogliere il tavolo: la passeggiata della vergogna, ma con le carte."];
+const pick = (items: string[]) => items[Math.floor(Math.random() * items.length)];
 type VisualEvent = { type: "play" | "draw" | "collect"; key: number };
 
 export function MatchPage() {
@@ -73,8 +76,8 @@ export function MatchPage() {
       if (variables.name === "play_cards") {
         const ids = (variables.payload as { card_ids?: string[] }).card_ids ?? [];
         const card = state.data?.payload.players.flatMap((player) => [...(player.private_hand ?? []), ...player.public_face_up_cards]).find((item) => ids.includes(item.id));
-        if (card && specialCards[card.rank]) setSpecialNotice(specialCards[card.rank].title);
-      } else if (variables.name === "collect_table") setSpecialNotice("Tavolo raccolto. Un souvenir davvero ingombrante.");
+        if (card && specialCards[card.rank]) setSpecialNotice(pick(specialCards[card.rank].messages));
+      } else if (variables.name === "collect_table") setSpecialNotice(pick(collectMessages));
       setSelected([]);
       queryClient.invalidateQueries({ queryKey: ["match", id] });
     },
@@ -93,8 +96,9 @@ export function MatchPage() {
   const active = state.data.payload.players.find((player) => player.seat_index === state.data.payload.turn_seat);
   const isOwnTurn = own?.seat_index === state.data.payload.turn_seat;
   const playableVisible = own?.private_hand?.length ? own.private_hand : own?.public_face_up_cards ?? [];
-  const topCard = state.data.payload.table_cards.at(-1);
+  const topCard = state.data.payload.table_cards.at(0);
   const tableEffect = topCard ? specialCards[topCard.rank]?.table : undefined;
+  const cardZone = own?.private_hand?.length ? "Carte in mano" : own?.public_face_up_cards.length ? "Carte scoperte" : "Carte coperte";
   const toggle = (cardId: string, rank: string) => {
     if (selected.includes(cardId)) return setSelected(selected.filter((item) => item !== cardId));
     const chosen = playableVisible.filter((card) => selected.includes(card.id));
@@ -115,8 +119,9 @@ export function MatchPage() {
       <div className="turn-panel"><p className={isOwnTurn ? "your-turn" : ""}>{isOwnTurn ? "È il tuo turno" : <>Turno di <strong>{active?.display_name ?? "—"}</strong></>}</p><TurnTimer deadline={state.data.deadline} /></div>
     </header>
     {!own && <p className="panel ace-response" role="status">Modalità spettatore · osservazione in sola lettura</p>}
-    <div className="opponents">{state.data.payload.players.filter((player) => player.id !== own?.id).map((player) => <article className={`panel opponent ${player.seat_index === state.data.payload.turn_seat ? "active-opponent" : ""}`} key={player.id}><strong>{player.display_name}</strong><p>{statusLabel[player.status] ?? player.status}{player.reentry_count ? ` · rientrato ${player.reentry_count}×` : ""} · {player.total_card_count} carte</p><div className="mini-cards">{player.public_face_up_cards.map((card) => <Card card={card} key={card.id} />)}</div></article>)}</div>
-    <section className={`shared-table panel ${visualEvent?.type === "collect" ? "table-collecting" : ""}`}><div className="table-title"><h2>Tavolo</h2><div className={`deck-pile ${visualEvent?.type === "draw" ? "deck-drawing" : ""}`} aria-label={`Mazzo, ${state.data.payload.deck_count} carte`}><span /><span /><strong>{state.data.payload.deck_count}</strong></div></div><div className="card-row table-cards">{state.data.payload.table_cards.length ? state.data.payload.table_cards.map((card, index) => <Card card={card} key={card.id} animation={index === state.data.payload.table_cards.length - 1 && visualEvent?.type === "play" ? "play" : undefined} />) : <p className="muted">Il tavolo è vuoto.</p>}</div>{tableEffect && <p className="table-effect" role="status">✦ {tableEffect}</p>}</section>
-    {own && <section className={`own-area ${isOwnTurn ? "own-turn" : ""}`}><div className="own-title"><h2>Le tue carte</h2>{isOwnTurn && <span>TOCCA A TE</span>}</div><div className="card-row">{playableVisible.map((card) => <Card card={card} key={card.id} selected={selected.includes(card.id)} onClick={() => isOwnTurn && toggle(card.id, card.rank)} animation={visualEvent?.type === "draw" ? "draw" : undefined} />)}{!playableVisible.length && own.own_face_down?.map((card) => <CardBack key={card.id} revealed={own.privately_seen_face_down_card?.id === card.id} onClick={() => isOwnTurn && chooseCovered(card.id)} />)}</div>{own.privately_seen_face_down_card && !playableVisible.length ? <p className="muted">Carta spiata: {own.privately_seen_face_down_card.rank} di {own.privately_seen_face_down_card.suit}. Ora selezionala e giocala.</p> : null}<div className="sticky-actions"><button className="button button-secondary" disabled={!isOwnTurn || mutation.isPending} onClick={() => mutation.mutate({ name: "collect_table", payload: {} })}>Raccogli il tavolo</button><button className="button button-primary" disabled={!isOwnTurn || !selected.length || mutation.isPending} onClick={() => mutation.mutate({ name: "play_cards", payload: { card_ids: selected } })}>Gioca {selected.length || ""}</button><button className="button button-ghost" disabled={!isOwnTurn || mutation.isPending} onClick={() => mutation.mutate({ name: "retire", payload: {} })}>Ritirati</button></div></section>}
+    <div className="game-board"><div className="table-arena"><div className="opponent-ring">{state.data.payload.players.filter((player) => player.id !== own?.id).map((player, index, players) => <article style={{ "--seat-angle": `${(index * 360) / players.length}deg`, "--seat-counter-angle": `${(-index * 360) / players.length}deg` } as React.CSSProperties} className={`panel opponent ring-player ${player.seat_index === state.data.payload.turn_seat ? "active-opponent" : ""}`} key={player.id}><div className="opponent-head"><PlayerAvatar name={player.display_name} seed={player.avatar_seed} url={player.avatar_url} /><div><strong>{player.display_name}</strong><p>{statusLabel[player.status] ?? player.status} · {player.total_card_count} carte</p></div></div><div className="mini-cards">{player.public_face_up_cards.map((card) => <Card card={card} key={card.id} />)}</div></article>)}</div>
+      <section className={`shared-table panel arena-center ${visualEvent?.type === "collect" ? "table-collecting" : ""}`}><div className="table-title"><div><h2>Tavolo</h2><small>Più recenti a sinistra</small></div><div className={`deck-pile ${visualEvent?.type === "draw" ? "deck-drawing" : ""}`} aria-label={`Mazzo, ${state.data.payload.deck_count} carte`}><span /><span /><strong>{state.data.payload.deck_count}</strong></div></div><div className="card-row table-cards">{state.data.payload.table_cards.length ? state.data.payload.table_cards.map((card, index) => <Card card={card} key={card.id} animation={index === 0 && visualEvent?.type === "play" ? "play" : undefined} />) : <p className="muted">Il tavolo è vuoto.</p>}</div>{tableEffect && <p className="table-effect" role="status">✦ {tableEffect}</p>}</section></div>
+      <aside className="panel event-history"><p className="eyebrow">Cronaca del disastro</p><h2>Ultime azioni</h2>{state.data.payload.recent_events?.length ? <ol>{state.data.payload.recent_events.map((event) => <li key={event.sequence}><span className={`event-dot event-${event.type.replaceAll(".", "-")}`} /><div><strong>{event.payload.actor_name ?? "Qualcuno"}</strong><p>{event.type === "cards.played" ? <>ha giocato <b>{event.payload.cards?.map((card) => card.rank).join(", ")}</b></> : event.type === "table.collected" ? <>ha raccolto il tavolo ({event.payload.card_count ?? 0} carte)</> : event.type === "player.retired" ? "si è ritirato" : "ha eseguito una mossa"}</p></div></li>)}</ol> : <p className="muted">Ancora nessun danno da documentare.</p>}</aside></div>
+    {own && <section className={`own-area ${isOwnTurn ? "own-turn" : ""}`}><div className="own-title"><div><h2>{cardZone}</h2><small>Ordine obbligatorio: mano → scoperte → coperte</small></div>{isOwnTurn && <span>TOCCA A TE</span>}</div><div className="own-player"><PlayerAvatar name={own.display_name} seed={own.avatar_seed} url={own.avatar_url} size="large" /><strong>{own.display_name}</strong></div><div className="card-row">{playableVisible.map((card) => <Card card={card} key={card.id} selected={selected.includes(card.id)} onClick={() => isOwnTurn && toggle(card.id, card.rank)} animation={visualEvent?.type === "draw" ? "draw" : undefined} />)}{!playableVisible.length && own.own_face_down?.map((card) => own.privately_seen_face_down_card?.id === card.id ? <PeekedCardHalf key={card.id} card={own.privately_seen_face_down_card} selected={selected.includes(card.id)} onClick={() => isOwnTurn && setSelected([card.id])} /> : <CardBack key={card.id} onClick={() => isOwnTurn && chooseCovered(card.id)} />)}</div><div className="sticky-actions"><button className="button button-secondary" disabled={!isOwnTurn || mutation.isPending} onClick={() => mutation.mutate({ name: "collect_table", payload: {} })}>Raccogli il tavolo</button><button className="button button-primary" disabled={!isOwnTurn || !selected.length || mutation.isPending} onClick={() => mutation.mutate({ name: "play_cards", payload: { card_ids: selected } })}>Gioca {selected.length || ""}</button><button className="button button-ghost" disabled={!isOwnTurn || mutation.isPending} onClick={() => mutation.mutate({ name: "retire", payload: {} })}>Ritirati</button></div></section>}
   </section>;
 }
