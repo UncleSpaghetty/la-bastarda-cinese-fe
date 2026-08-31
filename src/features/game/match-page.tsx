@@ -24,7 +24,8 @@ const specialCards: Record<string, { messages: string[]; table: string }> = {
   A: { messages: ["Asso servito. Scegli a chi rovinare la giornata.", "Un asso e improvvisamente tutti evitano il contatto visivo.", "Passa il disastro a un amico. È questo il senso dell'amicizia."], table: "Chi gioca l'asso sceglie il destinatario del tavolo." },
 };
 const collectMessages = ["Tavolo raccolto. Un souvenir davvero ingombrante.", "Hai preso tutto. L'avidità, almeno, non ti manca.", "Che bella mano piena. Peccato sia piena di problemi.", "Raccogliere il tavolo: la passeggiata della vergogna, ma con le carte."];
-const pick = (items: string[]) => items[Math.floor(Math.random() * items.length)];
+const rankOrder = ["3", "4", "5", "6", "7", "8", "9", "J", "Q", "K", "2", "10", "A"];
+const sortCards = (cards: MatchState["payload"]["table_cards"]) => [...cards].sort((a, b) => rankOrder.indexOf(a.rank) - rankOrder.indexOf(b.rank) || a.suit.localeCompare(b.suit));
 type VisualEvent = { type: "play" | "draw" | "collect"; key: number };
 
 export function MatchPage() {
@@ -37,6 +38,7 @@ export function MatchPage() {
   const [specialNotice, setSpecialNotice] = useState<string>();
   const [visualEvent, setVisualEvent] = useState<VisualEvent>();
   const previous = useRef<{ table: number; deck: number } | undefined>(undefined);
+  const lastNoticeSequence = useRef<number | undefined>(undefined);
   const eventKey = useRef(0);
   const setConnection = useConnectionStore((value) => value.setStatus);
 
@@ -70,14 +72,25 @@ export function MatchPage() {
     previous.current = next;
   }, [state.data]);
 
+  useEffect(() => {
+    const latest = state.data?.payload.recent_events?.[0];
+    if (!latest) return;
+    if (lastNoticeSequence.current === undefined) {
+      lastNoticeSequence.current = latest.sequence;
+      return;
+    }
+    if (latest.sequence <= lastNoticeSequence.current) return;
+    lastNoticeSequence.current = latest.sequence;
+    if (latest.payload.special_message) setSpecialNotice(latest.payload.special_message);
+    else if (latest.type === "cards.played") {
+      const special = latest.payload.cards?.find((card) => specialCards[card.rank]);
+      if (special) setSpecialNotice(specialCards[special.rank].messages[latest.sequence % specialCards[special.rank].messages.length]);
+    } else if (latest.type === "table.collected") setSpecialNotice(collectMessages[latest.sequence % collectMessages.length]);
+  }, [state.data?.payload.recent_events]);
+
   const mutation = useMutation({
     mutationFn: ({ name, payload }: { name: string; payload: object }) => sendCommand(id, state.data!.state_version, name, payload),
     onSuccess: (_value, variables) => {
-      if (variables.name === "play_cards") {
-        const ids = (variables.payload as { card_ids?: string[] }).card_ids ?? [];
-        const card = state.data?.payload.players.flatMap((player) => [...(player.private_hand ?? []), ...player.public_face_up_cards]).find((item) => ids.includes(item.id));
-        if (card && specialCards[card.rank]) setSpecialNotice(pick(specialCards[card.rank].messages));
-      } else if (variables.name === "collect_table") setSpecialNotice(pick(collectMessages));
       setSelected([]);
       queryClient.invalidateQueries({ queryKey: ["match", id] });
     },
@@ -95,10 +108,7 @@ export function MatchPage() {
   const own = state.data.payload.players.find((player) => player.private_hand !== undefined);
   const active = state.data.payload.players.find((player) => player.seat_index === state.data.payload.turn_seat);
   const isOwnTurn = own?.seat_index === state.data.payload.turn_seat;
-  const playableVisible = own?.private_hand?.length ? own.private_hand : own?.public_face_up_cards ?? [];
-  const topCard = state.data.payload.table_cards.at(0);
-  const tableEffect = topCard ? specialCards[topCard.rank]?.table : undefined;
-  const cardZone = own?.private_hand?.length ? "Carte in mano" : own?.public_face_up_cards.length ? "Carte scoperte" : "Carte coperte";
+  const playableVisible = own?.private_hand?.length ? sortCards(own.private_hand) : own?.public_face_up_cards ?? [];
   const toggle = (cardId: string, rank: string) => {
     if (selected.includes(cardId)) return setSelected(selected.filter((item) => item !== cardId));
     const chosen = playableVisible.filter((card) => selected.includes(card.id));
@@ -119,9 +129,9 @@ export function MatchPage() {
       <div className="turn-panel"><p className={isOwnTurn ? "your-turn" : ""}>{isOwnTurn ? "È il tuo turno" : <>Turno di <strong>{active?.display_name ?? "—"}</strong></>}</p><TurnTimer deadline={state.data.deadline} /></div>
     </header>
     {!own && <p className="panel ace-response" role="status">Modalità spettatore · osservazione in sola lettura</p>}
-    <div className="game-board"><div className="table-arena"><div className="opponent-ring">{state.data.payload.players.filter((player) => player.id !== own?.id).map((player, index, players) => <article style={{ "--seat-angle": `${(index * 360) / players.length}deg`, "--seat-counter-angle": `${(-index * 360) / players.length}deg` } as React.CSSProperties} className={`panel opponent ring-player ${player.seat_index === state.data.payload.turn_seat ? "active-opponent" : ""}`} key={player.id}><div className="opponent-head"><PlayerAvatar name={player.display_name} seed={player.avatar_seed} url={player.avatar_url} /><div><strong>{player.display_name}</strong><p>{statusLabel[player.status] ?? player.status} · {player.total_card_count} carte</p></div></div><div className="mini-cards">{player.public_face_up_cards.map((card) => <Card card={card} key={card.id} />)}</div></article>)}</div>
-      <section className={`shared-table panel arena-center ${visualEvent?.type === "collect" ? "table-collecting" : ""}`}><div className="table-title"><div><h2>Tavolo</h2><small>Più recenti a sinistra</small></div><div className={`deck-pile ${visualEvent?.type === "draw" ? "deck-drawing" : ""}`} aria-label={`Mazzo, ${state.data.payload.deck_count} carte`}><span /><span /><strong>{state.data.payload.deck_count}</strong></div></div><div className="card-row table-cards">{state.data.payload.table_cards.length ? state.data.payload.table_cards.map((card, index) => <Card card={card} key={card.id} animation={index === 0 && visualEvent?.type === "play" ? "play" : undefined} />) : <p className="muted">Il tavolo è vuoto.</p>}</div>{tableEffect && <p className="table-effect" role="status">✦ {tableEffect}</p>}</section></div>
+    <div className="game-board"><div className="table-arena"><div className="opponent-ring">{state.data.payload.players.map((player) => { const handCount = player.hand_count ?? player.private_hand?.length ?? Math.max(0, player.total_card_count - player.public_face_up_cards.length - (player.face_down_count ?? player.own_face_down?.length ?? 3)); const downCount = player.face_down_count ?? player.own_face_down?.length ?? Math.min(3, Math.max(0, player.total_card_count - player.public_face_up_cards.length)); return <article className={`panel opponent ring-player ${player.id === own?.id ? "current-table-player" : ""} ${player.seat_index === state.data.payload.turn_seat ? "active-opponent" : ""}`} key={player.id}><div className="opponent-head"><PlayerAvatar name={player.display_name} seed={player.avatar_seed} url={player.avatar_url} /><div><strong>{player.display_name}{player.id === own?.id ? " (tu)" : ""}</strong><p>{statusLabel[player.status] ?? player.status} · {player.total_card_count} carte</p></div></div><div className="player-table-zones"><div><small>Scoperte</small><div className="mini-cards face-up-stack">{player.public_face_up_cards.map((card) => <Card card={card} key={card.id} />)}{!player.public_face_up_cards.length && <i>—</i>}</div></div><div><small>Coperte · {downCount}</small><div className="mini-cards face-down-stack">{Array.from({ length: downCount }, (_, index) => <CardBack key={index} />)}</div></div>{handCount > 0 && <span className="hidden-hand-count">Mano · {handCount}</span>}</div></article>; })}</div>
+      <section className={`shared-table panel arena-center ${visualEvent?.type === "collect" ? "table-collecting" : ""}`}><div className="table-title"><div><h2>Tavolo</h2><small>La carta in cima è in primo piano</small></div><div className={`deck-pile ${visualEvent?.type === "draw" ? "deck-drawing" : ""}`} aria-label={`Mazzo, ${state.data.payload.deck_count} carte`}><span /><span /><strong>{state.data.payload.deck_count}</strong></div></div><div className="table-card-stack">{state.data.payload.table_cards.length ? state.data.payload.table_cards.slice().reverse().map((card, index, cards) => <span key={card.id} style={{ "--stack-x": `${(index % 5) * 5}px`, "--stack-y": `${(index % 4) * 4}px`, "--stack-r": `${(index % 3) - 1}deg`, zIndex: index } as React.CSSProperties}><Card card={card} animation={index === cards.length - 1 && visualEvent?.type === "play" ? "play" : undefined} /></span>) : <p className="muted">Il tavolo è vuoto.</p>}</div></section></div>
       <aside className="panel event-history"><p className="eyebrow">Cronaca del disastro</p><h2>Ultime azioni</h2>{state.data.payload.recent_events?.length ? <ol>{state.data.payload.recent_events.map((event) => <li key={event.sequence}><span className={`event-dot event-${event.type.replaceAll(".", "-")}`} /><div><strong>{event.payload.actor_name ?? "Qualcuno"}</strong><p>{event.type === "cards.played" ? <>ha giocato <b>{event.payload.cards?.map((card) => card.rank).join(", ")}</b></> : event.type === "table.collected" ? <>ha raccolto il tavolo ({event.payload.card_count ?? 0} carte)</> : event.type === "player.retired" ? "si è ritirato" : "ha eseguito una mossa"}</p></div></li>)}</ol> : <p className="muted">Ancora nessun danno da documentare.</p>}</aside></div>
-    {own && <section className={`own-area ${isOwnTurn ? "own-turn" : ""}`}><div className="own-title"><div><h2>{cardZone}</h2><small>Ordine obbligatorio: mano → scoperte → coperte</small></div>{isOwnTurn && <span>TOCCA A TE</span>}</div><div className="own-player"><PlayerAvatar name={own.display_name} seed={own.avatar_seed} url={own.avatar_url} size="large" /><strong>{own.display_name}</strong></div><div className="card-row">{playableVisible.map((card) => <Card card={card} key={card.id} selected={selected.includes(card.id)} onClick={() => isOwnTurn && toggle(card.id, card.rank)} animation={visualEvent?.type === "draw" ? "draw" : undefined} />)}{!playableVisible.length && own.own_face_down?.map((card) => own.privately_seen_face_down_card?.id === card.id ? <PeekedCardHalf key={card.id} card={own.privately_seen_face_down_card} selected={selected.includes(card.id)} onClick={() => isOwnTurn && setSelected([card.id])} /> : <CardBack key={card.id} onClick={() => isOwnTurn && chooseCovered(card.id)} />)}</div><div className="sticky-actions"><button className="button button-secondary" disabled={!isOwnTurn || mutation.isPending} onClick={() => mutation.mutate({ name: "collect_table", payload: {} })}>Raccogli il tavolo</button><button className="button button-primary" disabled={!isOwnTurn || !selected.length || mutation.isPending} onClick={() => mutation.mutate({ name: "play_cards", payload: { card_ids: selected } })}>Gioca {selected.length || ""}</button><button className="button button-ghost" disabled={!isOwnTurn || mutation.isPending} onClick={() => mutation.mutate({ name: "retire", payload: {} })}>Ritirati</button></div></section>}
+    {own && <section className={`own-area ${isOwnTurn ? "own-turn" : ""}`}><div className="own-title"><div><h2>Le tue carte</h2><small>Mano ordinata per valore · poi scoperte · infine coperte</small></div>{isOwnTurn && <span>TOCCA A TE</span>}</div><div className="own-player"><PlayerAvatar name={own.display_name} seed={own.avatar_seed} url={own.avatar_url} size="large" /><strong>{own.display_name}</strong></div>{own.private_hand?.length ? <div className="hand-fan">{sortCards(own.private_hand).map((card, index, cards) => <span key={card.id} style={{ "--fan-angle": `${(index - (cards.length - 1) / 2) * 4}deg`, "--fan-y": `${Math.abs(index - (cards.length - 1) / 2) * 3}px` } as React.CSSProperties}><Card card={card} selected={selected.includes(card.id)} onClick={() => isOwnTurn && toggle(card.id, card.rank)} animation={visualEvent?.type === "draw" ? "draw" : undefined} /></span>)}</div> : own.public_face_up_cards.length ? <div className="card-row">{own.public_face_up_cards.map((card) => <Card card={card} key={card.id} selected={selected.includes(card.id)} onClick={() => isOwnTurn && toggle(card.id, card.rank)} />)}</div> : <div className="covered-hand">{own.own_face_down?.map((card) => own.privately_seen_face_down_card?.id === card.id ? <PeekedCardHalf key={card.id} card={own.privately_seen_face_down_card} selected={selected.includes(card.id)} onClick={() => isOwnTurn && setSelected([card.id])} /> : <CardBack key={card.id} onClick={() => isOwnTurn && chooseCovered(card.id)} />)}</div>}<div className="sticky-actions"><button className="button button-secondary" disabled={!isOwnTurn || mutation.isPending} onClick={() => mutation.mutate({ name: "collect_table", payload: {} })}>Raccogli il tavolo</button><button className="button button-primary" disabled={!isOwnTurn || !selected.length || mutation.isPending} onClick={() => mutation.mutate({ name: "play_cards", payload: { card_ids: selected } })}>Gioca {selected.length || ""}</button><button className="button button-ghost" disabled={!isOwnTurn || mutation.isPending} onClick={() => mutation.mutate({ name: "retire", payload: {} })}>Ritirati</button></div></section>}
   </section>;
 }
