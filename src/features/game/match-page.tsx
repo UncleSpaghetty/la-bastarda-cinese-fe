@@ -153,6 +153,7 @@ export function MatchPage() {
 
   return <section className="match-page">
     <ActionFeedback message={feedback?.message} tone={feedback?.tone} />
+    {own && <button className="button button-secondary collect-table-action" disabled={!isOwnTurn || mutation.isPending} onClick={() => mutation.mutate({ name: "collect_table", payload: {} })}>Raccogli il tavolo</button>}
     {specialNotice && <div className="special-toast" role="status"><span>♠</span>{specialNotice}</div>}
     {visualEvent && <div key={visualEvent.key} className={`game-motion motion-${visualEvent.type}`} aria-hidden="true"><i /><i /><i /></div>}
     <AceEffectModal phase={state.data.payload.phase} targets={state.data.payload.eligible_ace_targets} own={own} hand={playableVisible} tableCards={state.data.payload.table_cards} deadline={state.data.deadline} pending={state.data.payload.pending_effect} busy={mutation.isPending} onCommand={(name, payload) => mutation.mutate({ name, payload })} />
@@ -169,6 +170,7 @@ export function MatchPage() {
 }
 
 function PublicZones({ player }: { player: PlayerView }) {
+  if (player.private_hand !== undefined && player.private_hand.length === 0) return null;
   const handCount = player.hand_count ?? player.private_hand?.length ?? 0;
   const downCount = player.face_down_count ?? player.own_face_down?.length ?? Math.min(3, Math.max(0, player.total_card_count - player.public_face_up_cards.length - handCount));
   return <div className="player-table-zones"><div><small>Scoperte</small><div className="mini-cards face-up-stack">{player.public_face_up_cards.map((card) => <Card card={card} key={card.id} />)}{!player.public_face_up_cards.length && <i>—</i>}</div></div><div><small>Coperte · {downCount}</small><div className="mini-cards face-down-stack">{Array.from({ length: downCount }, (_, index) => <CardBack key={index} />)}</div></div>{handCount > 0 && <span className="hidden-hand-count">Mano · {handCount}</span>}</div>;
