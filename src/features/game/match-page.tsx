@@ -90,7 +90,7 @@ export function MatchPage() {
 
   const mutation = useMutation({
     mutationFn: ({ name, payload }: { name: string; payload: object }) => sendCommand(id, state.data!.state_version, name, payload),
-    onSuccess: (_value, variables) => {
+    onSuccess: () => {
       setSelected([]);
       queryClient.invalidateQueries({ queryKey: ["match", id] });
     },
