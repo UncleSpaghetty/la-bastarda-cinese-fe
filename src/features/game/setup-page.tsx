@@ -17,9 +17,10 @@ export function SetupPage() {
   const state = useQuery({ queryKey: ["match", id], queryFn: () => getMatch(id), refetchInterval: 2_000 });
   const [hand, setHand] = useState<string[]>([]);
   const [up, setUp] = useState<string[]>([]);
+  const [confirmed, setConfirmed] = useState(false);
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["match", id] });
   const swap = useMutation({ mutationFn: () => swapCards(id, hand, up), onSuccess: () => { setHand([]); setUp([]); refresh(); } });
-  const confirm = useMutation({ mutationFn: () => confirmCards(id), onSuccess: () => { refresh(); navigate(`/matches/${id}`); } });
+  const confirm = useMutation({ mutationFn: () => confirmCards(id), onSuccess: () => { setConfirmed(true); refresh(); } });
   const own = state.data?.payload.players.find((player) => player.private_hand);
   useEffect(() => {
     if (state.data && !own) navigate(`/matches/${id}`, { replace: true });
@@ -28,13 +29,14 @@ export function SetupPage() {
     if (state.data && state.data.payload.phase !== "SETUP_SWAP") navigate(`/matches/${id}`, { replace: true });
   }, [id, navigate, state.data]);
   if (!own) return <section className="form-page"><p>Preparazione delle carte…</p></section>;
+  if ((confirmed || own.setup_confirmed) && state.data?.payload.phase === "SETUP_SWAP") return <section className="setup-page setup-waiting"><div className="panel waiting-panel"><span className="waiting-spinner" aria-hidden="true" /><p className="eyebrow">Carte confermate</p><h1>In attesa degli altri giocatori.</h1><p className="muted">La partita inizierà automaticamente appena tutti avranno confermato il proprio assetto.</p><TurnTimer deadline={state.data.deadline} label="Inizio automatico" /></div></section>;
   const toggle = (values: string[], set: (value: string[]) => void, cardId: string) => set(values.includes(cardId) ? values.filter((item) => item !== cardId) : [...values, cardId]);
   const error = swap.error ?? confirm.error;
   return <section className={`setup-page ${swap.isPending ? "swap-in-progress" : ""}`}><ActionFeedback message={error ? apiErrorMessage(error, "Non è stato possibile preparare le carte.") : undefined} tone={error ? "error" : "success"} /><div className="setup-heading"><div><p className="eyebrow">Preparazione</p><h1>Scegli il tuo assetto.</h1><p className="muted">Seleziona lo stesso numero di carte nelle due zone. Puoi ripetere lo scambio finché non confermi.</p></div><TurnTimer deadline={state.data?.deadline ?? null} label="Inizio automatico" /></div>
     <div className="swap-lane" aria-hidden="true"><span>Mano</span><i>⇄</i><span>Tavolo</span></div>
     <div className="setup-zones"><div className="card-section panel"><h2>Carte scoperte <small>· {up.length} selezionate</small></h2><div className="card-row">{own.public_face_up_cards.map((card) => <DraggableSwapCard key={card.id} card={card} selected={up.includes(card.id)} swapping={swap.isPending && up.includes(card.id)} onSelect={() => toggle(up, setUp, card.id)} />)}</div></div>
     <div className="card-section panel"><h2>Carte in mano <small>· {hand.length} selezionate</small></h2><div className="card-row">{own.private_hand?.map((card) => <DraggableSwapCard key={card.id} card={card} selected={hand.includes(card.id)} swapping={swap.isPending && hand.includes(card.id)} onSelect={() => toggle(hand, setHand, card.id)} />)}</div></div></div>
-    <div className="sticky-actions"><button className="button button-secondary" disabled={!hand.length || hand.length !== up.length || swap.isPending} onClick={() => swap.mutate()}>{swap.isPending ? "Scambio in corso…" : `Scambia ${hand.length || ""} carte`}</button><button className="button button-primary" disabled={confirm.isPending || swap.isPending} onClick={() => confirm.mutate()}>Conferma carte</button></div>
+    <div className="sticky-actions"><button className="button button-secondary" disabled={!hand.length || hand.length !== up.length || swap.isPending || confirmed} onClick={() => swap.mutate()}>{swap.isPending ? "Scambio in corso…" : `Scambia ${hand.length || ""} carte`}</button><button className="button button-primary" disabled={confirm.isPending || swap.isPending || confirmed} onClick={() => confirm.mutate()}>{confirm.isPending ? "Conferma…" : "Conferma carte"}</button></div>
   </section>;
 }
 

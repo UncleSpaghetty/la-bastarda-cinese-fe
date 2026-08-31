@@ -2,7 +2,7 @@ import { apiRequest } from "../../lib/api/client";
 
 export type PlayingCard = { id: string; rank: string; suit: string; position?: number };
 export type PlayerView = {
-  id: string; display_name: string; avatar_seed?: string; avatar_url?: string; seat_index: number; status: string; reentry_count: number; public_face_up_cards: PlayingCard[];
+  id: string; display_name: string; avatar_seed?: string; avatar_url?: string; seat_index: number; status: string; reentry_count: number; setup_confirmed?: boolean; public_face_up_cards: PlayingCard[];
   total_card_count: number; hand_count?: number; face_down_count?: number; private_hand?: PlayingCard[]; own_face_down?: PlayingCard[];
   privately_seen_face_down_card?: PlayingCard;
 };
@@ -10,6 +10,7 @@ export type MatchState = {
   match_id: string; state_version: number; deadline: string | null;
   payload: {
     phase: string; players: PlayerView[]; deck_count: number; table_cards: PlayingCard[]; turn_seat: number | null;
+    constraint?: { rank?: string | null; lower_or_equal_seven?: boolean } | null;
     pending_effect?: { type: string; source_player_id?: string; target_player_id?: string } | null;
     eligible_ace_targets?: { id: string; display_name: string; total_card_count: number }[];
     recent_events?: { sequence: number; type: string; created_at: string; payload: { actor_id?: string; actor_name?: string; cards?: { rank: string; suit: string }[]; card_count?: number; special_message?: string } }[];

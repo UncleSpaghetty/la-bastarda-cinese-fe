@@ -11,7 +11,7 @@ import { apiErrorMessage } from "../../lib/api/client";
 import { RealtimeClient } from "../../lib/realtime/realtime-client";
 import { useConnectionStore } from "../../stores/connection-store";
 import { getMatch, sendCommand } from "./api";
-import type { MatchState } from "./api";
+import type { MatchState, PlayerView } from "./api";
 
 const statusLabel: Record<string, string> = {
   ACTIVE: "In gioco", FINISHED: "Ha chiuso", REENTERED: "Rientrato", RETIRED: "Ritirato", LOSER: "Ultimo classificato",
@@ -26,6 +26,16 @@ const specialCards: Record<string, { messages: string[]; table: string }> = {
 const collectMessages = ["Tavolo raccolto. Un souvenir davvero ingombrante.", "Hai preso tutto. L'avidità, almeno, non ti manca.", "Che bella mano piena. Peccato sia piena di problemi.", "Raccogliere il tavolo: la passeggiata della vergogna, ma con le carte."];
 const rankOrder = ["3", "4", "5", "6", "7", "8", "9", "J", "Q", "K", "2", "10", "A"];
 const sortCards = (cards: MatchState["payload"]["table_cards"]) => [...cards].sort((a, b) => rankOrder.indexOf(a.rank) - rankOrder.indexOf(b.rank) || a.suit.localeCompare(b.suit));
+const alwaysPlayable = new Set(["2", "10", "A"]);
+const ordinaryStrength: Record<string, number> = { "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, J: 11, Q: 12, K: 13 };
+function isCardLegal(card: MatchState["payload"]["table_cards"][number], payload: MatchState["payload"]) {
+  if (payload.phase === "ACE_RESPONSE") return alwaysPlayable.has(card.rank);
+  const constraint = payload.constraint;
+  if (alwaysPlayable.has(card.rank) || !constraint?.rank) return true;
+  if (!(card.rank in ordinaryStrength)) return false;
+  if (constraint.lower_or_equal_seven) return ordinaryStrength[card.rank] <= 7;
+  return !(constraint.rank in ordinaryStrength) || ordinaryStrength[card.rank] >= ordinaryStrength[constraint.rank];
+}
 type VisualEvent = { type: "play" | "draw" | "collect"; key: number };
 
 export function MatchPage() {
@@ -39,6 +49,7 @@ export function MatchPage() {
   const [visualEvent, setVisualEvent] = useState<VisualEvent>();
   const previous = useRef<{ table: number; deck: number } | undefined>(undefined);
   const lastNoticeSequence = useRef<number | undefined>(undefined);
+  const autoCollectedVersion = useRef<number | undefined>(undefined);
   const eventKey = useRef(0);
   const setConnection = useConnectionStore((value) => value.setStatus);
 
@@ -101,6 +112,18 @@ export function MatchPage() {
   });
 
   useEffect(() => {
+    const match = state.data;
+    if (!match || mutation.isPending || autoCollectedVersion.current === match.state_version) return;
+    const player = match.payload.players.find((item) => item.private_hand !== undefined);
+    if (!player || player.seat_index !== match.payload.turn_seat || !["TURN", "ACE_RESPONSE"].includes(match.payload.phase)) return;
+    const visible = player.private_hand?.length ? player.private_hand : player.public_face_up_cards;
+    if (!visible.length || visible.some((card) => isCardLegal(card, match.payload))) return;
+    autoCollectedVersion.current = match.state_version;
+    setFeedback({ message: "Nessuna carta giocabile: il tavolo viene raccolto automaticamente." });
+    mutation.mutate({ name: "collect_table", payload: {} });
+  }, [mutation, state.data]);
+
+  useEffect(() => {
     if (state.data?.payload.phase === "COMPLETED" || state.data?.payload.phase === "ABANDONED") navigate(`/matches/${id}/result`, { replace: true });
   }, [id, navigate, state.data?.payload.phase]);
 
@@ -111,8 +134,17 @@ export function MatchPage() {
   const playableVisible = own?.private_hand?.length ? sortCards(own.private_hand) : own?.public_face_up_cards ?? [];
   const toggle = (cardId: string, rank: string) => {
     if (selected.includes(cardId)) return setSelected(selected.filter((item) => item !== cardId));
+    const candidate = playableVisible.find((card) => card.id === cardId);
+    if (candidate && !isCardLegal(candidate, state.data.payload)) {
+      setFeedback({ message: state.data.payload.constraint?.lower_or_equal_seven ? "Azione non permessa: dopo un 7 puoi giocare solo valori pari o inferiori a 7." : "Azione non permessa: questa carta è inferiore al valore richiesto.", tone: "error" });
+      return;
+    }
     const chosen = playableVisible.filter((card) => selected.includes(card.id));
-    setSelected(!chosen.length || chosen[0].rank === rank ? [...selected, cardId] : [cardId]);
+    if (chosen.length && chosen[0].rank !== rank) {
+      setFeedback({ message: "Puoi giocare insieme soltanto carte dello stesso valore.", tone: "error" });
+      return;
+    }
+    setSelected([...selected, cardId]);
   };
   const chooseCovered = (cardId: string) => {
     if (own?.privately_seen_face_down_card?.id === cardId) setSelected([cardId]);
@@ -129,9 +161,19 @@ export function MatchPage() {
       <div className="turn-panel"><p className={isOwnTurn ? "your-turn" : ""}>{isOwnTurn ? "È il tuo turno" : <>Turno di <strong>{active?.display_name ?? "—"}</strong></>}</p><TurnTimer deadline={state.data.deadline} /></div>
     </header>
     {!own && <p className="panel ace-response" role="status">Modalità spettatore · osservazione in sola lettura</p>}
-    <div className="game-board"><div className="table-arena"><div className="opponent-ring">{state.data.payload.players.map((player) => { const handCount = player.hand_count ?? player.private_hand?.length ?? Math.max(0, player.total_card_count - player.public_face_up_cards.length - (player.face_down_count ?? player.own_face_down?.length ?? 3)); const downCount = player.face_down_count ?? player.own_face_down?.length ?? Math.min(3, Math.max(0, player.total_card_count - player.public_face_up_cards.length)); return <article className={`panel opponent ring-player ${player.id === own?.id ? "current-table-player" : ""} ${player.seat_index === state.data.payload.turn_seat ? "active-opponent" : ""}`} key={player.id}><div className="opponent-head"><PlayerAvatar name={player.display_name} seed={player.avatar_seed} url={player.avatar_url} /><div><strong>{player.display_name}{player.id === own?.id ? " (tu)" : ""}</strong><p>{statusLabel[player.status] ?? player.status} · {player.total_card_count} carte</p></div></div><div className="player-table-zones"><div><small>Scoperte</small><div className="mini-cards face-up-stack">{player.public_face_up_cards.map((card) => <Card card={card} key={card.id} />)}{!player.public_face_up_cards.length && <i>—</i>}</div></div><div><small>Coperte · {downCount}</small><div className="mini-cards face-down-stack">{Array.from({ length: downCount }, (_, index) => <CardBack key={index} />)}</div></div>{handCount > 0 && <span className="hidden-hand-count">Mano · {handCount}</span>}</div></article>; })}</div>
-      <section className={`shared-table panel arena-center ${visualEvent?.type === "collect" ? "table-collecting" : ""}`}><div className="table-title"><div><h2>Tavolo</h2><small>La carta in cima è in primo piano</small></div><div className={`deck-pile ${visualEvent?.type === "draw" ? "deck-drawing" : ""}`} aria-label={`Mazzo, ${state.data.payload.deck_count} carte`}><span /><span /><strong>{state.data.payload.deck_count}</strong></div></div><div className="table-card-stack">{state.data.payload.table_cards.length ? state.data.payload.table_cards.slice().reverse().map((card, index, cards) => <span key={card.id} style={{ "--stack-x": `${(index % 5) * 5}px`, "--stack-y": `${(index % 4) * 4}px`, "--stack-r": `${(index % 3) - 1}deg`, zIndex: index } as React.CSSProperties}><Card card={card} animation={index === cards.length - 1 && visualEvent?.type === "play" ? "play" : undefined} /></span>) : <p className="muted">Il tavolo è vuoto.</p>}</div></section></div>
+    <div className="game-board"><div className="table-arena"><div className="table-filigree" aria-hidden="true"><span>♥</span><span>♣</span><span>♠</span></div><div className="opponent-ring">{state.data.payload.players.filter((player) => player.id !== own?.id).sort((a, b) => own ? (a.seat_index - own.seat_index + state.data.payload.players.length) % state.data.payload.players.length - (b.seat_index - own.seat_index + state.data.payload.players.length) % state.data.payload.players.length : a.seat_index - b.seat_index).map((player, index, players) => { const angle = players.length === 1 ? 270 : 165 + index * (210 / (players.length - 1)); const radians = angle * Math.PI / 180; return <PlayerSeat player={player} active={player.seat_index === state.data.payload.turn_seat} style={{ left: `${50 + Math.cos(radians) * 42}%`, top: `${51 + Math.sin(radians) * 39}%` }} key={player.id} />; })}</div>
+      <section className={`shared-table panel arena-center ${visualEvent?.type === "collect" ? "table-collecting" : ""}`}><div className="table-title"><h2>Tavolo</h2><div className={`deck-pile ${visualEvent?.type === "draw" ? "deck-drawing" : ""}`} aria-label={`Mazzo, ${state.data.payload.deck_count} carte`}><span /><span /><strong>{state.data.payload.deck_count}</strong></div></div><div className="table-card-stack">{state.data.payload.table_cards.length ? state.data.payload.table_cards.slice().reverse().map((card, index, cards) => <span key={card.id} style={{ "--stack-x": `${(index % 5) * 5}px`, "--stack-y": `${(index % 4) * 4}px`, "--stack-r": `${(index % 3) - 1}deg`, zIndex: index } as React.CSSProperties}><Card card={card} animation={index === cards.length - 1 && visualEvent?.type === "play" ? "play" : undefined} /></span>) : <p className="muted">Il tavolo è vuoto.</p>}</div></section>
+      {own && <article className={`panel current-seat ${isOwnTurn ? "own-turn" : ""}`}><div className="current-seat-head"><PlayerAvatar name={own.display_name} seed={own.avatar_seed} url={own.avatar_url} /><div><strong>{own.display_name} (tu)</strong><p>{statusLabel[own.status] ?? own.status} · {own.total_card_count} carte</p></div>{isOwnTurn && <span>TOCCA A TE</span>}</div><PublicZones player={own} />{own.private_hand?.length ? <div className="hand-fan">{sortCards(own.private_hand).map((card, index, cards) => <span key={card.id} style={{ "--fan-angle": `${(index - (cards.length - 1) / 2) * 4}deg`, "--fan-y": `${Math.abs(index - (cards.length - 1) / 2) * 3}px` } as React.CSSProperties}><Card card={card} selected={selected.includes(card.id)} onClick={() => isOwnTurn && toggle(card.id, card.rank)} animation={visualEvent?.type === "draw" ? "draw" : undefined} /></span>)}</div> : own.public_face_up_cards.length ? <div className="card-row current-playable">{own.public_face_up_cards.map((card) => <Card card={card} key={card.id} selected={selected.includes(card.id)} onClick={() => isOwnTurn && toggle(card.id, card.rank)} />)}</div> : <div className="covered-hand">{own.own_face_down?.map((card) => own.privately_seen_face_down_card?.id === card.id ? <PeekedCardHalf key={card.id} card={own.privately_seen_face_down_card} selected={selected.includes(card.id)} onClick={() => isOwnTurn && setSelected([card.id])} /> : <CardBack key={card.id} onClick={() => isOwnTurn && chooseCovered(card.id)} />)}</div>}<div className="table-actions"><button className="button button-primary" disabled={!isOwnTurn || !selected.length || mutation.isPending} onClick={() => mutation.mutate({ name: "play_cards", payload: { card_ids: selected } })}>Gioca {selected.length || ""}</button></div></article>}</div>
       <aside className="panel event-history"><p className="eyebrow">Cronaca del disastro</p><h2>Ultime azioni</h2>{state.data.payload.recent_events?.length ? <ol>{state.data.payload.recent_events.map((event) => <li key={event.sequence}><span className={`event-dot event-${event.type.replaceAll(".", "-")}`} /><div><strong>{event.payload.actor_name ?? "Qualcuno"}</strong><p>{event.type === "cards.played" ? <>ha giocato <b>{event.payload.cards?.map((card) => card.rank).join(", ")}</b></> : event.type === "table.collected" ? <>ha raccolto il tavolo ({event.payload.card_count ?? 0} carte)</> : event.type === "player.retired" ? "si è ritirato" : "ha eseguito una mossa"}</p></div></li>)}</ol> : <p className="muted">Ancora nessun danno da documentare.</p>}</aside></div>
-    {own && <section className={`own-area ${isOwnTurn ? "own-turn" : ""}`}><div className="own-title"><div><h2>Le tue carte</h2><small>Mano ordinata per valore · poi scoperte · infine coperte</small></div>{isOwnTurn && <span>TOCCA A TE</span>}</div><div className="own-player"><PlayerAvatar name={own.display_name} seed={own.avatar_seed} url={own.avatar_url} size="large" /><strong>{own.display_name}</strong></div>{own.private_hand?.length ? <div className="hand-fan">{sortCards(own.private_hand).map((card, index, cards) => <span key={card.id} style={{ "--fan-angle": `${(index - (cards.length - 1) / 2) * 4}deg`, "--fan-y": `${Math.abs(index - (cards.length - 1) / 2) * 3}px` } as React.CSSProperties}><Card card={card} selected={selected.includes(card.id)} onClick={() => isOwnTurn && toggle(card.id, card.rank)} animation={visualEvent?.type === "draw" ? "draw" : undefined} /></span>)}</div> : own.public_face_up_cards.length ? <div className="card-row">{own.public_face_up_cards.map((card) => <Card card={card} key={card.id} selected={selected.includes(card.id)} onClick={() => isOwnTurn && toggle(card.id, card.rank)} />)}</div> : <div className="covered-hand">{own.own_face_down?.map((card) => own.privately_seen_face_down_card?.id === card.id ? <PeekedCardHalf key={card.id} card={own.privately_seen_face_down_card} selected={selected.includes(card.id)} onClick={() => isOwnTurn && setSelected([card.id])} /> : <CardBack key={card.id} onClick={() => isOwnTurn && chooseCovered(card.id)} />)}</div>}<div className="sticky-actions"><button className="button button-secondary" disabled={!isOwnTurn || mutation.isPending} onClick={() => mutation.mutate({ name: "collect_table", payload: {} })}>Raccogli il tavolo</button><button className="button button-primary" disabled={!isOwnTurn || !selected.length || mutation.isPending} onClick={() => mutation.mutate({ name: "play_cards", payload: { card_ids: selected } })}>Gioca {selected.length || ""}</button><button className="button button-ghost" disabled={!isOwnTurn || mutation.isPending} onClick={() => mutation.mutate({ name: "retire", payload: {} })}>Ritirati</button></div></section>}
   </section>;
+}
+
+function PublicZones({ player }: { player: PlayerView }) {
+  const handCount = player.hand_count ?? player.private_hand?.length ?? 0;
+  const downCount = player.face_down_count ?? player.own_face_down?.length ?? Math.min(3, Math.max(0, player.total_card_count - player.public_face_up_cards.length - handCount));
+  return <div className="player-table-zones"><div><small>Scoperte</small><div className="mini-cards face-up-stack">{player.public_face_up_cards.map((card) => <Card card={card} key={card.id} />)}{!player.public_face_up_cards.length && <i>—</i>}</div></div><div><small>Coperte · {downCount}</small><div className="mini-cards face-down-stack">{Array.from({ length: downCount }, (_, index) => <CardBack key={index} />)}</div></div>{handCount > 0 && <span className="hidden-hand-count">Mano · {handCount}</span>}</div>;
+}
+
+function PlayerSeat({ player, active, style }: { player: PlayerView; active: boolean; style: React.CSSProperties }) {
+  return <article className={`panel opponent ring-player ${active ? "active-opponent" : ""}`} style={style}><div className="opponent-head"><PlayerAvatar name={player.display_name} seed={player.avatar_seed} url={player.avatar_url} /><div><strong>{player.display_name}</strong><p>{statusLabel[player.status] ?? player.status} · {player.total_card_count} carte</p></div></div><PublicZones player={player} /></article>;
 }
