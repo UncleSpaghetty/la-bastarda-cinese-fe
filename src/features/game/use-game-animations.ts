@@ -4,7 +4,9 @@ import type { MatchState } from "./api";
 import { normalizeGameAnimations, type GameAnimation } from "./game-animation-events";
 
 function prefersReducedMotion() {
-  return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return (
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
 }
 
 export function useGameAnimations(current?: MatchState) {
@@ -13,7 +15,9 @@ export function useGameAnimations(current?: MatchState) {
   const initialized = useRef(false);
   const nextMode = useRef<"event" | "resync">("event");
   const [animations, setAnimations] = useState<GameAnimation[]>([]);
-  const suppressNextAnimation = useCallback(() => { nextMode.current = "resync"; }, []);
+  const suppressNextAnimation = useCallback(() => {
+    nextMode.current = "resync";
+  }, []);
 
   useEffect(() => {
     if (!current) return;

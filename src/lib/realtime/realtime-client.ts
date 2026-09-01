@@ -1,6 +1,10 @@
 import { SCHEMA_VERSION, type ClientMessage, type ServerMessage } from "@/contracts/realtime";
 
-type Options = { url: string; onMessage: (message: ServerMessage) => void; onStatus: (status: "connecting" | "open" | "reconnecting" | "idle") => void };
+type Options = {
+  url: string;
+  onMessage: (message: ServerMessage) => void;
+  onStatus: (status: "connecting" | "open" | "reconnecting" | "idle") => void;
+};
 
 export class RealtimeClient {
   private socket?: WebSocket;
@@ -17,13 +21,21 @@ export class RealtimeClient {
     this.socket.addEventListener("open", () => {
       this.reconnectAttempt = 0;
       this.options.onStatus("open");
-      this.heartbeat = setInterval(() => this.send({ type: "connection.heartbeat", schema_version: SCHEMA_VERSION, payload: {} }), 20_000);
+      this.heartbeat = setInterval(
+        () =>
+          this.send({ type: "connection.heartbeat", schema_version: SCHEMA_VERSION, payload: {} }),
+        20_000
+      );
     });
-    this.socket.addEventListener("message", (event) => this.options.onMessage(JSON.parse(event.data) as ServerMessage));
+    this.socket.addEventListener("message", (event) =>
+      this.options.onMessage(JSON.parse(event.data) as ServerMessage)
+    );
     this.socket.addEventListener("close", () => this.scheduleReconnect());
   }
 
-  send(message: ClientMessage) { if (this.socket?.readyState === WebSocket.OPEN) this.socket.send(JSON.stringify(message)); }
+  send(message: ClientMessage) {
+    if (this.socket?.readyState === WebSocket.OPEN) this.socket.send(JSON.stringify(message));
+  }
 
   disconnect() {
     this.stopped = true;

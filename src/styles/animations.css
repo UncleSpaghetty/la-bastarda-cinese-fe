@@ -1,0 +1,184 @@
+@keyframes feedback-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes timer-pulse {
+  to {
+    filter: brightness(1.5);
+  }
+}
+@keyframes turn-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  55% {
+    transform: scale(1.1);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes special-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -25px) scale(0.8) rotate(-2deg);
+  }
+  10%,
+  82% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -12px) scale(0.96);
+  }
+}
+@keyframes card-to-table {
+  from {
+    opacity: 0.4;
+    transform: translateY(90px) scale(1.18) rotate(-9deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes card-from-deck {
+  from {
+    opacity: 0;
+    transform: translate(170px, -120px) rotate(18deg) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes card-to-hand {
+  to {
+    opacity: 0;
+    transform: translateY(150px) scale(0.6);
+  }
+}
+@keyframes card-swap {
+  to {
+    transform: translateY(-12px) rotate(3deg);
+    filter: drop-shadow(0 0 12px #c7a7ff);
+  }
+}
+@keyframes table-scoop {
+  to {
+    opacity: 0;
+    transform: translateY(70px) scale(0.55);
+  }
+}
+@keyframes deck-to-hand {
+  to {
+    opacity: 0;
+    transform: translate(-230px, 180px) rotate(-25deg);
+  }
+}
+@keyframes motion-play {
+  from {
+    opacity: 0;
+    transform: translate(-240px, 220px) rotate(-20deg);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(3deg);
+  }
+}
+@keyframes motion-draw {
+  from {
+    opacity: 1;
+    transform: translate(230px, -110px) rotate(20deg);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-180px, 340px) rotate(-10deg);
+  }
+}
+@keyframes motion-collect {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-190px, 360px) scale(0.65);
+  }
+}
+@keyframes swap-arrow {
+  to {
+    transform: scale(1.25) rotate(5deg);
+    filter: drop-shadow(0 0 8px #ff796c);
+  }
+}
+@keyframes peek-glimpse {
+  0%,
+  30%,
+  100% {
+    transform: translateX(-120%);
+  }
+  60% {
+    transform: translateX(120%);
+  }
+}
+@keyframes waiting-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes game-card-move {
+  from {
+    opacity: 0;
+    transform: translate(calc(var(--motion-from-x) - 17px), calc(var(--motion-from-y) - 24px))
+      scale(0.78) rotate(-7deg);
+  }
+  15% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translate(calc(var(--motion-to-x) - 17px), calc(var(--motion-to-y) - 24px)) scale(1)
+      rotate(2deg);
+  }
+}
+@keyframes game-card-collect {
+  from {
+    opacity: 1;
+    transform: translate(calc(var(--motion-from-x) - 17px), calc(var(--motion-from-y) - 24px))
+      scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(calc(var(--motion-to-x) - 17px), calc(var(--motion-to-y) - 24px))
+      scale(0.65) rotate(8deg);
+  }
+}
+@keyframes game-card-banish {
+  from {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate(calc(var(--motion-from-x) - 17px), calc(var(--motion-from-y) - 24px))
+      scale(1);
+  }
+  to {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translate(calc(var(--motion-to-x) - 17px), calc(var(--motion-to-y) - 24px))
+      scale(0.2) rotate(20deg);
+  }
+}
+@keyframes skeleton-wave {
+  to {
+    background-position: -140% 0;
+  }
+}

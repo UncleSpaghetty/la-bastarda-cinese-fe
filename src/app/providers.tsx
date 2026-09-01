@@ -7,6 +7,8 @@ const queryClient = new QueryClient({
 });
 
 export function AppProviders({ children }: PropsWithChildren) {
-  useEffect(() => { void apiRequest("/csrf"); }, []);
+  useEffect(() => {
+    void apiRequest("/csrf");
+  }, []);
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }
