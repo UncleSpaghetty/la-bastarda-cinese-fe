@@ -1,20 +1,22 @@
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
-import { Link, Outlet } from "react-router";
+import { Link, Outlet, useLocation } from "react-router";
 
 import { ConnectionStatus } from "@/components/realtime/connection-status";
 
 export function AppShell() {
   const [open, setOpen] = useState(false);
+  const location = useLocation();
+  const isGameTable = /^\/matches\/[^/]+$/.test(location.pathname);
   const close = () => setOpen(false);
   return <div className="min-h-dvh bg-app text-foreground">
     <a href="#main" className="skip-link">Vai al contenuto</a>
-    <header className="app-header">
+    {!isGameTable && <header className="app-header">
       <Link to="/" className="brand-link" onClick={close}><span className="brand-mark" aria-hidden="true">B</span><span className="brand-name">La bastarda cinese</span></Link>
       <button className="nav-toggle" type="button" aria-expanded={open} aria-controls="main-navigation" aria-label={open ? "Chiudi menu" : "Apri menu"} onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button>
       <nav id="main-navigation" className={`app-nav ${open ? "is-open" : ""}`}><Link to="/" onClick={close}>Home</Link><Link to="/profile" onClick={close}>Account</Link><Link to="/history" onClick={close}>Storico</Link></nav>
       <ConnectionStatus />
-    </header>
+    </header>}
     <main id="main"><Outlet /></main>
   </div>;
 }
