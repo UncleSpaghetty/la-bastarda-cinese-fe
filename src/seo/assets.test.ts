@@ -51,17 +51,23 @@ describe("brand and metadata assets", () => {
   });
 
   it("uses the card-based, path-only brand geometry", () => {
+    const source = readFileSync(publicPath("brand/source-logo.svg"), "utf8");
+    const original = readFileSync(publicPath("brand/source-logo.original.svg"), "utf8");
     const mark = readFileSync(publicPath("brand/logo-mark.svg"), "utf8");
     const favicon = readFileSync(publicPath("favicon.svg"), "utf8");
-    expect(mark).toContain('viewBox="0 0 512 512"');
-    expect(mark).toContain('fill-rule="evenodd"');
-    expect(mark).toContain("rotate(-8");
-    expect(mark).toContain("rotate(6");
-    expect(mark).not.toMatch(/<text|font-family|data:image|M31\.5 3\.5/);
-    expect(favicon).not.toMatch(/<text|font-family|data:image|#5B4BDB/);
+    expect(original).toContain("<metadata>");
+    expect(source).not.toMatch(/<metadata|c2pa:|<image\b|data:image/i);
+    expect(source.match(/<path\b/g)?.length).toBeGreaterThan(1);
+    expect(mark).toContain('viewBox="256 224 512 576"');
+    expect(mark.toLowerCase()).toContain('#fb5057');
+    expect(mark.toLowerCase()).toContain('#413cbe');
+    expect(mark).not.toMatch(/<text|font-family|data:image|<metadata/i);
+    expect(favicon).not.toMatch(/<text|font-family|data:image|<metadata/i);
     for (const file of ["logo-horizontal.svg", "logo-compact.svg", "logo-monochrome.svg"]) {
-      expect(readFileSync(publicPath("brand", file), "utf8")).not.toMatch(/<text|font-family|data:image|M31\.5 3\.5/);
+      expect(readFileSync(publicPath("brand", file), "utf8")).not.toMatch(/<text|font-family|data:image|<metadata/i);
     }
+    expect(readFileSync(publicPath("brand/logo-horizontal.svg"), "utf8")).toBe(mark);
+    expect(readFileSync(publicPath("brand/logo-compact.svg"), "utf8")).toBe(mark);
   });
 
   it("keeps no obsolete app-icon sources in the brand directory", () => {
@@ -105,6 +111,8 @@ describe("brand and metadata assets", () => {
     const gameHeader = readFileSync(resolve(process.cwd(), "src/features/game/game-table-components.tsx"), "utf8");
     expect(appShell).toContain('/brand/logo-mark.svg');
     expect(gameHeader).toContain('/brand/logo-mark.svg');
+    expect(appShell).toContain('className="brand-wordmark"');
+    expect(gameHeader).toContain("<strong>La bastarda cinese</strong>");
     expect(appShell).not.toMatch(/brand-mark[^>]*>B</);
     expect(gameHeader).not.toMatch(/game-brand[^>]*><span[^>]*>B</);
   });

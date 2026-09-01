@@ -49,8 +49,8 @@ test("produces the brand asset preview matrix", async ({ page }, testInfo) => {
   await page.screenshot({ path: "screenshots/brand/brand-icons-preview.png", fullPage: true });
 
   await page.setContent(`<!doctype html><html><head><style>
-    body{margin:0;min-height:500px;display:grid;place-items:center;background:#07142f;font-family:Inter,system-ui,sans-serif}.frame{width:900px;padding:64px;border:1px solid #ffffff22;border-radius:28px;background:#111837;box-shadow:0 20px 60px #02071966}.frame img{display:block;width:100%;height:auto}
-  </style></head><body><div class="frame"><img src="${origin}/brand/logo-horizontal.svg" width="720" height="160" alt="Logo orizzontale La bastarda cinese"></div></body></html>`);
+    body{margin:0;min-height:500px;display:grid;place-items:center;background:#07142f;font-family:Inter,system-ui,sans-serif}.frame{width:900px;display:flex;align-items:center;gap:34px;padding:64px;border:1px solid #ffffff22;border-radius:28px;background:#111837;box-shadow:0 20px 60px #02071966}.frame img{display:block;width:180px;height:180px}.wordmark{color:#dcd6c7;font-size:64px;font-weight:650;letter-spacing:-.035em;white-space:nowrap}.wordmark strong{color:#fff;font-weight:900}
+  </style></head><body><div class="frame"><img src="${origin}/brand/logo-horizontal.svg" width="180" height="180" alt=""><span class="wordmark">La <strong>bastarda</strong> cinese</span></div></body></html>`);
   await expect.poll(() => page.locator("img").evaluate((image) => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
   await page.screenshot({ path: "screenshots/brand/logo-horizontal-preview.png", fullPage: true });
 
