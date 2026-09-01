@@ -39,6 +39,7 @@
 .local-player-dock.no-hand .local-face-up .game-card,
 .local-player-dock.no-hand .local-face-down .card-with-tooltip,
 .local-player-dock.no-hand .local-face-down .game-card,
+.local-player-dock.no-hand .local-face-up > span,
 .local-player-dock.no-hand .local-face-up > i,
 .local-player-dock.no-hand .local-face-down > i {
   width: 100%;
