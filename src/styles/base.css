@@ -12,6 +12,14 @@ body {
   min-width: 320px;
   min-height: 100vh;
 }
+@media (max-width: 700px) {
+  html,
+  body,
+  #root {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+}
 button,
 a {
   font: inherit;

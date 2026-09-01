@@ -453,6 +453,11 @@
   border-radius: 14px;
   cursor: pointer;
 }
+.choice-list label > span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .choice-list label:has(input:checked) {
   border-color: #8d7cff;
   background: #7665e815;

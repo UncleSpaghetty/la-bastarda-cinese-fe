@@ -229,6 +229,8 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 14px;
+  max-width: 1680px;
+  margin-inline: auto;
   padding: 12px clamp(12px, 1.5vw, 24px) 14px;
 }
 .game-stage.with-history {
@@ -236,8 +238,10 @@
 }
 .game-arena {
   min-width: 0;
+  max-width: 1400px;
   height: calc(100dvh - 88px);
   min-height: 690px;
+  margin-inline: auto;
   display: grid;
   grid-template-columns: minmax(154px, 190px) minmax(430px, 1fr) minmax(154px, 190px);
   grid-template-rows: minmax(122px, 0.58fr) minmax(220px, 1fr) minmax(250px, 1.08fr);

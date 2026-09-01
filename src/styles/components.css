@@ -1,3 +1,64 @@
+/* Generic modal dialog (e.g. the pre-lobby auth choice) */
+.modal-overlay {
+  position: fixed;
+  z-index: 70;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #020617c9;
+  backdrop-filter: blur(9px) saturate(0.7);
+}
+.modal-dialog {
+  position: relative;
+  width: min(440px, 100%);
+  max-height: calc(100dvh - 48px);
+  overflow: auto;
+}
+.modal-dialog h2 {
+  margin: 6px 0 10px;
+  font-size: 1.5rem;
+}
+.modal-dialog > p {
+  margin: 0 0 20px;
+  color: #aaa9c4;
+  line-height: 1.5;
+}
+.modal-close {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #ffffff1c;
+  border-radius: 50%;
+  background: #ffffff0b;
+  color: #d7d6e7;
+  cursor: pointer;
+}
+.modal-choice-grid {
+  display: grid;
+  gap: 10px;
+}
+.modal-back {
+  justify-self: start;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #c8c7db;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.modal-back:hover {
+  color: white;
+}
+
 /* Buttons */
 .button {
   min-height: 48px;

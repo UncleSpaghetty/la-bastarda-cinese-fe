@@ -1,45 +1,25 @@
 ﻿import { ArrowRight, Eye, Swords, Users } from "lucide-react";
 
 import { HOME_COPY } from "@/content/copy";
-import { useCreateRoom } from "./hooks/use-create-room";
+import { StartRoomModal } from "./components/start-room-modal";
+import { useStartRoomModal } from "./hooks/use-create-room";
 
 export function HomePage() {
-  const room = useCreateRoom();
+  const room = useStartRoomModal();
 
   return (
     <div className="home-page">
+      <StartRoomModal state={room} />
       <section className="home-hero page-container">
         <div className="hero-copy">
           <p className="eyebrow">{HOME_COPY.eyebrow}</p>
           <h1>{HOME_COPY.title}</h1>
           <p className="hero-lead">{HOME_COPY.description}</p>
-          <form
-            className="create-room-form"
-            onSubmit={(event) => {
-              event.preventDefault();
-              room.submit();
-            }}
-          >
-            <label htmlFor="host-name">Il tuo nome al tavolo</label>
-            <div>
-              <input
-                id="host-name"
-                value={room.hostName}
-                minLength={2}
-                maxLength={32}
-                placeholder="Come ti chiameranno quando perderai?"
-                onChange={(event) => room.setHostName(event.target.value)}
-                required
-              />
-              <button
-                className="button button-primary"
-                type="submit"
-                disabled={room.isPending || room.hostName.trim().length < 2}
-              >
-                {HOME_COPY.primaryCta} <ArrowRight size={18} />
-              </button>
-            </div>
-          </form>
+          <div className="hero-actions">
+            <button className="button button-primary" type="button" onClick={room.openModal}>
+              {HOME_COPY.primaryCta} <ArrowRight size={18} />
+            </button>
+          </div>
           <button className="text-cta" type="button" onClick={room.enterInvite}>
             {HOME_COPY.secondaryCta} <ArrowRight size={16} />
           </button>
@@ -101,11 +81,7 @@ export function HomePage() {
       </section>
       <section className="home-final-cta page-container">
         <p>Nessun disastro registrato. Per ora.</p>
-        <button
-          className="button button-primary"
-          type="button"
-          onClick={() => document.getElementById("host-name")?.focus()}
-        >
+        <button className="button button-primary" type="button" onClick={room.openModal}>
           Crea la prima partita
         </button>
       </section>
