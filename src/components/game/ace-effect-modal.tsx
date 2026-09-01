@@ -3,9 +3,11 @@ import { Minus, Plus, Sparkles, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import type { PlayerView, PlayingCard } from "../../features/game/api";
+import { CardBack } from "./card";
 import { TurnTimer } from "./turn-timer";
 
 type Target = { id: string; display_name: string; total_card_count: number };
+const validResponses = ["2", "10", "A"];
 
 export function AceEffectModal({
   phase,
@@ -39,8 +41,13 @@ export function AceEffectModal({
     setTargetId(undefined);
     setResponseCounts({});
   }, [phase]);
-  const responseCards = ["2", "10", "A"]
-    .map((rank) => ({ rank, cards: hand.filter((card) => card.rank === rank) }))
+  // With no hand or face-up cards, the only response comes from a covered card: peek it first.
+  const coveredOnly = hand.length === 0 && (own?.own_face_down?.length ?? 0) > 0;
+  const peekedCard = own?.privately_seen_face_down_card;
+  const peekedIsPlayable = Boolean(peekedCard && validResponses.includes(peekedCard.rank));
+  const respondSource = coveredOnly ? (peekedCard ? [peekedCard] : []) : hand;
+  const responseCards = validResponses
+    .map((rank) => ({ rank, cards: respondSource.filter((card) => card.rank === rank) }))
     .filter((item) => item.cards.length);
   const targetName = targets.find((target) => target.id === targetId)?.display_name;
 
@@ -149,6 +156,28 @@ export function AceEffectModal({
                           <small>Prendi tutto. Che affare.</small>
                         </span>
                       </button>
+                      {coveredOnly && !peekedCard && (
+                        <div className="ace-covered-peek">
+                          <p>Hai solo carte coperte: spiane una prima di decidere.</p>
+                          <div className="ace-covered-options">
+                            {own?.own_face_down?.map((card) => (
+                              <CardBack
+                                key={card.id}
+                                onClick={
+                                  busy
+                                    ? undefined
+                                    : () => onCommand("peek_face_down", { card_id: card.id })
+                                }
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {coveredOnly && peekedCard && !peekedIsPlayable && (
+                        <p className="ace-warning">
+                          Hai spiato un {peekedCard.rank}: non puoi rispondere. Raccogli il tavolo.
+                        </p>
+                      )}
                       {responseCards.map(({ rank, cards }) => {
                         const count = Math.min(responseCounts[rank] ?? 1, cards.length);
                         return (
