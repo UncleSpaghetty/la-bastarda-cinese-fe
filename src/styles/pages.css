@@ -456,6 +456,81 @@
   display: block;
 }
 
+/* --- Result page --- */
+.result-page {
+  max-width: 760px;
+  padding-block: 72px 100px;
+}
+.result-mark {
+  width: 84px;
+  height: 84px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 20px;
+  border: 1px solid #ffffff1c;
+  border-radius: 24px;
+  background: #ffffff08;
+  transform: rotate(-4deg);
+}
+.result-mark img {
+  display: block;
+}
+.result-lead {
+  max-width: 620px;
+  margin: 0 0 34px;
+  color: #b9b9cf;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+.result-lead strong {
+  color: #ff9a8f;
+}
+.result-grid {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+.result-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 1px solid #ffffff16;
+  border-radius: 18px;
+  background: #ffffff06;
+}
+.result-card.is-loser {
+  border-color: #ff796c55;
+  background: linear-gradient(135deg, #ff796c14, #ffffff06);
+  box-shadow: 0 0 0 1px #ff796c22;
+}
+.result-card strong {
+  display: block;
+  font-size: 1.05rem;
+}
+.result-card small {
+  display: block;
+  margin-top: 4px;
+  color: #9fa0b8;
+  font-size: 0.75rem;
+}
+.result-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  color: #c9c9dd;
+  font-size: 0.85rem;
+}
+.result-status i {
+  font-style: normal;
+}
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 @media (max-width: 800px) {
   .lobby-page {
     grid-template-columns: 1fr;

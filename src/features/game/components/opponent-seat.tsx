@@ -2,14 +2,7 @@ import { Card } from "@/components/game/card";
 import { PlayerAvatar } from "@/components/game/player-avatar";
 
 import type { PlayerView, PlayingCard } from "../api";
-
-const statusLabel: Record<string, string> = {
-  ACTIVE: "In gioco",
-  FINISHED: "Ha chiuso",
-  REENTERED: "Rientrato",
-  RETIRED: "Ritirato",
-  LOSER: "Ultimo classificato",
-};
+import { PLAYER_STATUS_LABELS } from "../status-labels";
 
 function PublicFaceUpCards({ cards }: { cards: PlayingCard[] }) {
   const visible = cards.slice(0, 3);
@@ -51,7 +44,7 @@ export function OpponentSeat({ player, active }: { player: PlayerView; active: b
           <strong>{player.display_name}</strong>
           <p>
             <span className="player-presence" />
-            {statusLabel[player.status] ?? player.status}
+            {PLAYER_STATUS_LABELS[player.status] ?? player.status}
           </p>
         </div>
         {active && <span className="turn-indicator">Turno</span>}
