@@ -2,14 +2,7 @@ import { Card, CardBack, PeekedCardHalf } from "@/components/game/card";
 import { PlayerAvatar } from "@/components/game/player-avatar";
 
 import type { PlayerView } from "../api";
-
-const statusLabel: Record<string, string> = {
-  ACTIVE: "In gioco",
-  FINISHED: "Ha chiuso",
-  REENTERED: "Rientrato",
-  RETIRED: "Ritirato",
-  LOSER: "Ultimo classificato",
-};
+import { PLAYER_STATUS_LABELS } from "../status-labels";
 
 export function LocalPlayerDock({
   player,
@@ -50,7 +43,7 @@ export function LocalPlayerDock({
             {player.display_name} <span>(tu)</span>
           </strong>
           <p>
-            {statusLabel[player.status] ?? player.status} · {player.total_card_count} carte
+            {PLAYER_STATUS_LABELS[player.status] ?? player.status} · {player.total_card_count} carte
           </p>
         </div>
         {active && <b>Tocca a te</b>}
