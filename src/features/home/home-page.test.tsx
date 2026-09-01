@@ -17,7 +17,7 @@ test("uses the product voice and clear table entry points", () => {
   expect(
     screen.getByRole("heading", { name: /liberati delle carte.*condanna l’ultimo/i })
   ).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: /crea il tavolo/i })).toBeDisabled();
+  expect(screen.getByRole("button", { name: /crea il tavolo/i })).toBeEnabled();
   expect(screen.getByRole("button", { name: /entra con un invito/i })).toBeInTheDocument();
   expect(screen.getByText(/nessun jolly.*nessuna pietà/i)).toBeInTheDocument();
   expect(screen.queryByText(/tavolo digitale per la vostra serata/i)).not.toBeInTheDocument();

@@ -34,10 +34,10 @@ export async function ensureGuest() {
   return apiRequest<{ id: string }>("/guest-identities", { method: "POST" });
 }
 
-export function createRoom(displayName: string) {
+export function createRoom(displayName: string, identityMode: "ALIAS" | "PROFILE" = "ALIAS") {
   return apiRequest<RoomState>("/rooms", {
     method: "POST",
-    body: JSON.stringify({ identity_mode: "ALIAS", display_name: displayName }),
+    body: JSON.stringify({ identity_mode: identityMode, display_name: displayName }),
   });
 }
 

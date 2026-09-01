@@ -35,7 +35,7 @@ export function LocalPlayerDock({
   const coveredIsActive = hand.length === 0 && player.public_face_up_cards.length === 0;
   return (
     <article
-      className={`local-player-dock ${active ? "is-active" : ""}`}
+      className={`local-player-dock ${active ? "is-active" : ""} ${hand.length === 0 ? "no-hand" : ""}`}
       data-motion-anchor={`player:${player.id}`}
       data-player-id={player.id}
     >
