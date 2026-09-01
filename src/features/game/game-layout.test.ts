@@ -3,15 +3,16 @@ import { describe, expect, it } from "vitest";
 import type { PlayerView } from "./api";
 import { assignPlayerSeats } from "./game-layout";
 
-const makePlayers = (count: number): PlayerView[] => Array.from({ length: count }, (_, seat_index) => ({
-  id: `player-${seat_index}`,
-  display_name: `Player ${seat_index}`,
-  seat_index,
-  status: "ACTIVE",
-  reentry_count: 0,
-  public_face_up_cards: [],
-  total_card_count: 9,
-}));
+const makePlayers = (count: number): PlayerView[] =>
+  Array.from({ length: count }, (_, seat_index) => ({
+    id: `player-${seat_index}`,
+    display_name: `Player ${seat_index}`,
+    seat_index,
+    status: "ACTIVE",
+    reentry_count: 0,
+    public_face_up_cards: [],
+    total_card_count: 9,
+  }));
 
 describe("assignPlayerSeats", () => {
   it.each([
@@ -32,7 +33,11 @@ describe("assignPlayerSeats", () => {
   it("keeps the local player in the bottom zone regardless of seat index", () => {
     const layout = assignPlayerSeats({ players: makePlayers(10), localPlayerId: "player-6" });
     expect(layout.bottom?.player.id).toBe("player-6");
-    expect([...layout.top, ...layout.left, ...layout.right].some(({ player }) => player.id === "player-6")).toBe(false);
+    expect(
+      [...layout.top, ...layout.left, ...layout.right].some(
+        ({ player }) => player.id === "player-6"
+      )
+    ).toBe(false);
   });
 
   it("keeps circular opponent order stable relative to the local player", () => {

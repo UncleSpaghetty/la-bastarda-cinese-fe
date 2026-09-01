@@ -19,7 +19,9 @@ describe("SeoHead", () => {
 
   it("renders exactly one set of homepage metadata", async () => {
     render(<SeoHead pathname="/" />);
-    await waitFor(() => expect(document.title).toBe("La bastarda cinese | Gioco di carte multiplayer online"));
+    await waitFor(() =>
+      expect(document.title).toBe("La bastarda cinese | Gioco di carte multiplayer online")
+    );
     expectSingle("title");
     expectSingle('meta[name="description"]');
     expectSingle('link[rel="canonical"]');
@@ -30,7 +32,9 @@ describe("SeoHead", () => {
 
   it("removes stale tags over forward and back-style route changes", async () => {
     const view = render(<SeoHead pathname="/" />);
-    await waitFor(() => expect(document.head.querySelector('link[rel="canonical"]')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(document.head.querySelector('link[rel="canonical"]')).toBeInTheDocument()
+    );
 
     act(() => view.rerender(<SeoHead pathname="/invite/do-not-leak" />));
     await waitFor(() => expect(document.title).toBe("Sei stato invitato | La bastarda cinese"));
@@ -42,7 +46,9 @@ describe("SeoHead", () => {
     expectSingle('meta[property="og:image"]');
 
     act(() => view.rerender(<SeoHead pathname="/" />));
-    await waitFor(() => expect(document.title).toBe("La bastarda cinese | Gioco di carte multiplayer online"));
+    await waitFor(() =>
+      expect(document.title).toBe("La bastarda cinese | Gioco di carte multiplayer online")
+    );
     expectSingle('link[rel="canonical"]');
     expectSingle('meta[name="description"]');
     expectSingle('meta[property="og:title"]');
@@ -54,6 +60,9 @@ describe("SeoHead", () => {
     await waitFor(() => expect(document.title).toBe("Partita in corso | La bastarda cinese"));
     expect(document.head.textContent).not.toContain("92a40d50-private");
     expect(document.head.innerHTML).not.toContain("hand=ace");
-    expect(document.head.querySelector('meta[name="robots"]')).toHaveAttribute("content", "noindex, nofollow");
+    expect(document.head.querySelector('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      "noindex, nofollow"
+    );
   });
 });

@@ -4,11 +4,22 @@ import { describe, expect, it } from "vitest";
 import type { PlayerView } from "./api";
 import { OpponentSeat } from "./game-table-components";
 
-const cards = ["3", "7", "K"].map((rank, index) => ({ id: `face-${index}`, rank, suit: index === 1 ? "HEARTS" : "CLUBS" }));
+const cards = ["3", "7", "K"].map((rank, index) => ({
+  id: `face-${index}`,
+  rank,
+  suit: index === 1 ? "HEARTS" : "CLUBS",
+}));
 const player: PlayerView = {
-  id: "opponent", display_name: "Giulia", seat_index: 2, status: "ACTIVE", reentry_count: 0,
-  public_face_up_cards: cards, total_card_count: 9,
-  hand_count: 4, face_down_count: 2, private_hand: [{ id: "private", rank: "A", suit: "SPADES" }],
+  id: "opponent",
+  display_name: "Giulia",
+  seat_index: 2,
+  status: "ACTIVE",
+  reentry_count: 0,
+  public_face_up_cards: cards,
+  total_card_count: 9,
+  hand_count: 4,
+  face_down_count: 2,
+  private_hand: [{ id: "private", rank: "A", suit: "SPADES" }],
   own_face_down: [{ id: "covered", rank: "10", suit: "HEARTS" }],
 };
 

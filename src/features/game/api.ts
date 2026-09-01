@@ -2,29 +2,70 @@ import { apiRequest } from "../../lib/api/client";
 
 export type PlayingCard = { id: string; rank: string; suit: string; position?: number };
 export type PlayerView = {
-  id: string; display_name: string; avatar_seed?: string; avatar_url?: string; seat_index: number; status: string; reentry_count: number; setup_confirmed?: boolean; public_face_up_cards: PlayingCard[];
-  total_card_count: number; hand_count?: number; face_down_count?: number; private_hand?: PlayingCard[]; own_face_down?: PlayingCard[];
+  id: string;
+  display_name: string;
+  avatar_seed?: string;
+  avatar_url?: string;
+  seat_index: number;
+  status: string;
+  reentry_count: number;
+  setup_confirmed?: boolean;
+  public_face_up_cards: PlayingCard[];
+  total_card_count: number;
+  hand_count?: number;
+  face_down_count?: number;
+  private_hand?: PlayingCard[];
+  own_face_down?: PlayingCard[];
   privately_seen_face_down_card?: PlayingCard;
 };
 export type MatchState = {
-  match_id: string; state_version: number; deadline: string | null;
+  match_id: string;
+  state_version: number;
+  deadline: string | null;
   payload: {
-    phase: string; players: PlayerView[]; deck_count: number; table_cards: PlayingCard[]; turn_seat: number | null;
+    phase: string;
+    players: PlayerView[];
+    deck_count: number;
+    table_cards: PlayingCard[];
+    turn_seat: number | null;
     constraint?: { rank?: string | null; lower_or_equal_seven?: boolean } | null;
     pending_effect?: { type: string; source_player_id?: string; target_player_id?: string } | null;
     eligible_ace_targets?: { id: string; display_name: string; total_card_count: number }[];
-    recent_events?: { sequence: number; type: string; created_at: string; payload: { actor_id?: string; actor_name?: string; cards?: { rank: string; suit: string }[]; card_count?: number; special_message?: string } }[];
+    recent_events?: {
+      sequence: number;
+      type: string;
+      created_at: string;
+      payload: {
+        actor_id?: string;
+        actor_name?: string;
+        cards?: { rank: string; suit: string }[];
+        card_count?: number;
+        special_message?: string;
+      };
+    }[];
   };
 };
 
-export function getMatch(id: string) { return apiRequest<MatchState>(`/matches/${id}/snapshot`); }
-export function swapCards(id: string, handIds: string[], faceUpIds: string[]) {
-  return apiRequest(`/matches/${id}/setup/swap`, { method: "POST", body: JSON.stringify({ hand_ids: handIds, face_up_ids: faceUpIds }) });
+export function getMatch(id: string) {
+  return apiRequest<MatchState>(`/matches/${id}/snapshot`);
 }
-export function confirmCards(id: string) { return apiRequest(`/matches/${id}/setup/confirm`, { method: "POST", body: "{}" }); }
+export function swapCards(id: string, handIds: string[], faceUpIds: string[]) {
+  return apiRequest(`/matches/${id}/setup/swap`, {
+    method: "POST",
+    body: JSON.stringify({ hand_ids: handIds, face_up_ids: faceUpIds }),
+  });
+}
+export function confirmCards(id: string) {
+  return apiRequest(`/matches/${id}/setup/confirm`, { method: "POST", body: "{}" });
+}
 export function sendCommand(id: string, stateVersion: number, command: string, payload: object) {
   return apiRequest(`/matches/${id}/commands`, {
     method: "POST",
-    body: JSON.stringify({ command_id: crypto.randomUUID(), expected_version: stateVersion, command, payload }),
+    body: JSON.stringify({
+      command_id: crypto.randomUUID(),
+      expected_version: stateVersion,
+      command,
+      payload,
+    }),
   });
 }

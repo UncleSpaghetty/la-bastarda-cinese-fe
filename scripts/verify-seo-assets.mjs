@@ -53,7 +53,12 @@ for (const [filename, expected] of dimensions) {
 }
 
 const ico = await readFile(resolve("dist/favicon.ico"));
-if (ico.length < 22 || ico.readUInt16LE(0) !== 0 || ico.readUInt16LE(2) !== 1 || ico.readUInt16LE(4) < 1) {
+if (
+  ico.length < 22 ||
+  ico.readUInt16LE(0) !== 0 ||
+  ico.readUInt16LE(2) !== 1 ||
+  ico.readUInt16LE(4) < 1
+) {
   throw new Error("[build] favicon.ico is not a valid ICO file.");
 }
 
@@ -61,12 +66,16 @@ const manifest = JSON.parse(await readFile(resolve("dist/site.webmanifest"), "ut
 for (const icon of manifest.icons ?? []) await access(resolve("dist", icon.src.replace(/^\//, "")));
 
 const index = await readFile(resolve("dist/index.html"), "utf8");
-if (index.includes("%VITE_")) throw new Error("[build] Unresolved Vite placeholder in dist/index.html.");
-if (!index.includes(`${siteUrl}/social/og-default.png`)) throw new Error("[build] Static Open Graph URL is missing.");
+if (index.includes("%VITE_"))
+  throw new Error("[build] Unresolved Vite placeholder in dist/index.html.");
+if (!index.includes(`${siteUrl}/social/og-default.png`))
+  throw new Error("[build] Static Open Graph URL is missing.");
 
 const sitemap = await readFile(resolve("dist/sitemap.xml"), "utf8");
 const robots = await readFile(resolve("dist/robots.txt"), "utf8");
-if (!sitemap.includes(`<loc>${siteUrl}/</loc>`)) throw new Error("[build] Sitemap canonical URL is missing.");
-if (!robots.includes(`Sitemap: ${siteUrl}/sitemap.xml`)) throw new Error("[build] robots.txt sitemap URL is missing.");
+if (!sitemap.includes(`<loc>${siteUrl}/</loc>`))
+  throw new Error("[build] Sitemap canonical URL is missing.");
+if (!robots.includes(`Sitemap: ${siteUrl}/sitemap.xml`))
+  throw new Error("[build] robots.txt sitemap URL is missing.");
 
 console.log(`[build] SEO assets verified for ${siteUrl}.`);

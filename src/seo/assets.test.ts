@@ -22,9 +22,12 @@ function pngDimensions(filename: string): [number, number] {
 }
 
 describe("brand and metadata assets", () => {
-  it.each(Object.entries(expectedPngs))("has the correct PNG dimensions for %s", (filename, dimensions) => {
-    expect(pngDimensions(filename)).toEqual(dimensions);
-  });
+  it.each(Object.entries(expectedPngs))(
+    "has the correct PNG dimensions for %s",
+    (filename, dimensions) => {
+      expect(pngDimensions(filename)).toEqual(dimensions);
+    }
+  );
 
   it("contains a valid ICO favicon", () => {
     const ico = readFileSync(publicPath("favicon.ico"));
@@ -45,7 +48,10 @@ describe("brand and metadata assets", () => {
     "social/og-default.svg",
     "social/og-square.svg",
   ])("contains valid SVG source %s", (filename) => {
-    const document = new DOMParser().parseFromString(readFileSync(publicPath(filename), "utf8"), "image/svg+xml");
+    const document = new DOMParser().parseFromString(
+      readFileSync(publicPath(filename), "utf8"),
+      "image/svg+xml"
+    );
     expect(document.querySelector("parsererror")).toBeNull();
     expect(document.documentElement.tagName).toBe("svg");
   });
@@ -59,12 +65,14 @@ describe("brand and metadata assets", () => {
     expect(source).not.toMatch(/<metadata|c2pa:|<image\b|data:image/i);
     expect(source.match(/<path\b/g)?.length).toBeGreaterThan(1);
     expect(mark).toContain('viewBox="256 224 512 576"');
-    expect(mark.toLowerCase()).toContain('#fb5057');
-    expect(mark.toLowerCase()).toContain('#413cbe');
+    expect(mark.toLowerCase()).toContain("#fb5057");
+    expect(mark.toLowerCase()).toContain("#413cbe");
     expect(mark).not.toMatch(/<text|font-family|data:image|<metadata/i);
     expect(favicon).not.toMatch(/<text|font-family|data:image|<metadata/i);
     for (const file of ["logo-horizontal.svg", "logo-compact.svg", "logo-monochrome.svg"]) {
-      expect(readFileSync(publicPath("brand", file), "utf8")).not.toMatch(/<text|font-family|data:image|<metadata/i);
+      expect(readFileSync(publicPath("brand", file), "utf8")).not.toMatch(
+        /<text|font-family|data:image|<metadata/i
+      );
     }
     expect(readFileSync(publicPath("brand/logo-horizontal.svg"), "utf8")).toBe(mark);
     expect(readFileSync(publicPath("brand/logo-compact.svg"), "utf8")).toBe(mark);
@@ -78,7 +86,9 @@ describe("brand and metadata assets", () => {
   });
 
   it("provides a repeatable brand generation command", () => {
-    const packageJson = JSON.parse(readFileSync(resolve(process.cwd(), "package.json"), "utf8")) as { scripts: Record<string, string> };
+    const packageJson = JSON.parse(
+      readFileSync(resolve(process.cwd(), "package.json"), "utf8")
+    ) as { scripts: Record<string, string> };
     expect(packageJson.scripts["generate:brand"]).toBe("node scripts/generate-brand-assets.mjs");
     expect(existsSync(resolve(process.cwd(), "scripts/generate-brand-assets.mjs"))).toBe(true);
   });
@@ -98,19 +108,31 @@ describe("brand and metadata assets", () => {
 
   it("keeps complete static homepage metadata in index.html", () => {
     const html = readFileSync(resolve(process.cwd(), "index.html"), "utf8");
-    expect(html).toContain("<title data-seo-managed>La bastarda cinese | Gioco di carte multiplayer online</title>");
-    expect(html).toContain('name="description" content="Liberati delle carte, rovina i piani degli amici e condanna l’ultimo rimasto.');
+    expect(html).toContain(
+      "<title data-seo-managed>La bastarda cinese | Gioco di carte multiplayer online</title>"
+    );
+    expect(html).toContain(
+      'name="description" content="Liberati delle carte, rovina i piani degli amici e condanna l’ultimo rimasto.'
+    );
     expect(html).toContain('rel="canonical" href="%VITE_PUBLIC_SITE_URL%/"');
-    expect(html).toContain('property="og:image" content="%VITE_PUBLIC_SITE_URL%/social/og-default.png"');
+    expect(html).toContain(
+      'property="og:image" content="%VITE_PUBLIC_SITE_URL%/social/og-default.png"'
+    );
     expect(html).toContain('rel="manifest" href="/site.webmanifest"');
     expect(html).not.toContain('name="keywords"');
   });
 
   it("does not retain the old placeholder brand in either header", () => {
-    const appShell = readFileSync(resolve(process.cwd(), "src/components/layout/app-shell.tsx"), "utf8");
-    const gameHeader = readFileSync(resolve(process.cwd(), "src/features/game/game-table-components.tsx"), "utf8");
-    expect(appShell).toContain('/brand/logo-mark.svg');
-    expect(gameHeader).toContain('/brand/logo-mark.svg');
+    const appShell = readFileSync(
+      resolve(process.cwd(), "src/components/layout/app-shell.tsx"),
+      "utf8"
+    );
+    const gameHeader = readFileSync(
+      resolve(process.cwd(), "src/features/game/components/game-header.tsx"),
+      "utf8"
+    );
+    expect(appShell).toContain("/brand/logo-mark.svg");
+    expect(gameHeader).toContain("/brand/logo-mark.svg");
     expect(appShell).toContain('className="brand-wordmark"');
     expect(gameHeader).toContain("<strong>La bastarda cinese</strong>");
     expect(appShell).not.toMatch(/brand-mark[^>]*>B</);
@@ -122,7 +144,16 @@ describe("brand and metadata assets", () => {
       rewrites: Array<{ source: string; destination: string }>;
     };
     const source = config.rewrites[0].source;
-    for (const publicAsset of ["brand/", "icons/", "social/", "favicon", "apple-touch-icon", "site", "robots", "sitemap"]) {
+    for (const publicAsset of [
+      "brand/",
+      "icons/",
+      "social/",
+      "favicon",
+      "apple-touch-icon",
+      "site",
+      "robots",
+      "sitemap",
+    ]) {
       expect(source).toContain(publicAsset);
     }
     expect(config.rewrites[0].destination).toBe("/index.html");

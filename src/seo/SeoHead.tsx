@@ -12,7 +12,12 @@ import { resolveRouteMetadata } from "./route-metadata";
 
 const MANAGED_ATTRIBUTE = "data-seo-managed";
 
-function appendMeta(fragment: DocumentFragment, attribute: "name" | "property", key: string, content?: string) {
+function appendMeta(
+  fragment: DocumentFragment,
+  attribute: "name" | "property",
+  key: string,
+  content?: string
+) {
   if (!content) return;
   const meta = document.createElement("meta");
   meta.setAttribute(MANAGED_ATTRIBUTE, "true");
@@ -21,7 +26,11 @@ function appendMeta(fragment: DocumentFragment, attribute: "name" | "property", 
   fragment.append(meta);
 }
 
-function addSocialMetadata(fragment: DocumentFragment, metadata: PageMetadata, canonicalUrl?: string) {
+function addSocialMetadata(
+  fragment: DocumentFragment,
+  metadata: PageMetadata,
+  canonicalUrl?: string
+) {
   const og = metadata.openGraph;
   const ogTitle = og?.title ?? metadata.title;
   const ogDescription = og?.description ?? metadata.description;
@@ -56,7 +65,9 @@ export function SeoHead({ pathname }: { pathname: string }) {
   useEffect(() => {
     const siteUrl = getPublicSiteUrl();
     const metadata = resolveRouteMetadata(pathname, siteUrl);
-    const canonicalUrl = metadata.canonicalPath ? absolutePublicUrl(metadata.canonicalPath, siteUrl) : undefined;
+    const canonicalUrl = metadata.canonicalPath
+      ? absolutePublicUrl(metadata.canonicalPath, siteUrl)
+      : undefined;
     document.head.querySelectorAll(`[${MANAGED_ATTRIBUTE}]`).forEach((element) => element.remove());
 
     const fragment = document.createDocumentFragment();
@@ -87,7 +98,9 @@ export function SeoHead({ pathname }: { pathname: string }) {
     document.head.append(fragment);
 
     return () => {
-      document.head.querySelectorAll(`[${MANAGED_ATTRIBUTE}]`).forEach((element) => element.remove());
+      document.head
+        .querySelectorAll(`[${MANAGED_ATTRIBUTE}]`)
+        .forEach((element) => element.remove());
     };
   }, [pathname]);
 

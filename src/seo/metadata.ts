@@ -1,7 +1,8 @@
 export const APP_NAME = import.meta.env.VITE_PUBLIC_APP_NAME?.trim() || "La bastarda cinese";
 export const THEME_COLOR = "#07142F";
 export const DEFAULT_SOCIAL_IMAGE_PATH = "/social/og-default.png";
-export const DEFAULT_SOCIAL_IMAGE_ALT = "Logo di La bastarda cinese con carte da gioco su sfondo blu notte";
+export const DEFAULT_SOCIAL_IMAGE_ALT =
+  "Logo di La bastarda cinese con carte da gioco su sfondo blu notte";
 
 export type PageMetadata = {
   title: string;

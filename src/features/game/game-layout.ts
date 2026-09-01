@@ -20,9 +20,11 @@ function circularOrder(players: PlayerView[], local?: PlayerView) {
   const total = sorted.length;
   return sorted
     .filter((player) => player.id !== local.id)
-    .sort((a, b) =>
-      ((a.seat_index - local.seat_index + total) % total)
-      - ((b.seat_index - local.seat_index + total) % total));
+    .sort(
+      (a, b) =>
+        ((a.seat_index - local.seat_index + total) % total) -
+        ((b.seat_index - local.seat_index + total) % total)
+    );
 }
 
 /**
