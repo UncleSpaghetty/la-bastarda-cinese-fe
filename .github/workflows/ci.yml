@@ -12,5 +12,8 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+        env:
+          VITE_PUBLIC_SITE_URL: https://playwright.example
+          VITE_PUBLIC_APP_NAME: La bastarda cinese
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
