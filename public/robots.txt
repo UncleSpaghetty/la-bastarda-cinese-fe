@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /invite/
+Disallow: /rooms/
+Disallow: /matches/
+Disallow: /profile
+Disallow: /history
+
+Sitemap: %VITE_PUBLIC_SITE_URL%/sitemap.xml

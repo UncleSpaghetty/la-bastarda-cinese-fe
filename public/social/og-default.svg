@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <pattern id="card-weave" width="28" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <path d="M0 0v28" stroke="#F8F4EC" stroke-opacity=".045" stroke-width="7"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="#07142F"/>
+  <rect width="1200" height="630" fill="url(#card-weave)"/>
+  <circle cx="188" cy="205" r="150" fill="#5B4BDB" fill-opacity=".14"/>
+  <g transform="translate(45 55) scale(.55)">
+    <g transform="rotate(-8 220 258)"><rect x="72" y="68" width="304" height="382" rx="42" fill="#5B4BDB"/></g>
+    <g transform="rotate(6 286 256)">
+      <path fill="#FF5C5C" d="M174 58h218c24 0 42 18 42 42v207l-17 17 17 18v72c0 24-18 42-42 42H174c-24 0-42-18-42-42V100c0-24 18-42 42-42Z"/>
+      <path fill="#F8F4EC" fill-rule="evenodd" d="M197 150h92c55 0 86 24 86 66 0 27-14 47-39 58 31 10 49 34 49 68 0 50-37 76-96 76h-92V150Zm51 44v59h36c27 0 40-10 40-30 0-20-13-29-40-29h-36Zm0 101v78h42c29 0 43-13 43-39 0-26-15-39-44-39h-41Z"/>
+      <path fill="#5B4BDB" d="M331 323c8-13 23-4 23 7 0 8-7 14-16 20-9-6-16-12-16-20 0-11 15-20 23-7 2-5 5-9 8-13 3 4 6 8 8 13Zm7 23c2 14 8 21 18 27h-36c10-6 16-13 18-27Z"/>
+      <path fill="#5B4BDB" d="m193 145 4-45 24 24 21-38 17 41 29-19-8 48h-82l-5-11Z" transform="rotate(-10 236 139)"/>
+      <rect x="198" y="153" width="82" height="13" rx="6.5" fill="#5B4BDB" transform="rotate(-10 236 139)"/>
+    </g>
+  </g>
+  <g fill="#F8F4EC" font-family="Inter, ui-sans-serif, system-ui, sans-serif">
+    <text x="72" y="424" font-size="31" font-weight="700">La bastarda cinese</text>
+    <text x="72" y="492" font-size="49" font-weight="900" letter-spacing="-2">Liberati delle carte.</text>
+    <text x="72" y="548" font-size="49" font-weight="900" letter-spacing="-2">Condanna l’ultimo.</text>
+  </g>
+  <g transform="translate(790 135) rotate(-10)">
+    <rect width="210" height="300" rx="25" fill="#F8F4EC" stroke="#07142F" stroke-width="8"/>
+    <text x="24" y="56" fill="#FF5C5C" font-family="ui-sans-serif, system-ui, sans-serif" font-size="38" font-weight="900">A</text>
+    <path fill="#FF5C5C" d="M34 78c-14-18-43 3 0 34 43-31 14-52 0-34Z"/>
+  </g>
+  <g transform="translate(892 118) rotate(5)">
+    <rect width="210" height="300" rx="25" fill="#F8F4EC" stroke="#07142F" stroke-width="8"/>
+    <text x="24" y="56" fill="#07142F" font-family="ui-sans-serif, system-ui, sans-serif" font-size="38" font-weight="900">10</text>
+    <path fill="#07142F" d="M43 78c12-18 37 2 19 18 21 3 15 31-7 23 4 12 12 16 18 19H13c6-3 14-7 18-19-22 8-28-20-7-23-18-16 7-36 19-18Z"/>
+  </g>
+  <g transform="translate(967 170) rotate(13)">
+    <rect width="178" height="255" rx="22" fill="#5B4BDB" stroke="#F8F4EC" stroke-width="8"/>
+    <path d="M16 14h146v227H16z" fill="none" stroke="#07142F" stroke-width="4" stroke-dasharray="10 8" opacity=".65"/>
+    <path fill="#F8F4EC" fill-rule="evenodd" transform="translate(-22 -5) scale(.38)" d="M197 150h92c55 0 86 24 86 66 0 27-14 47-39 58 31 10 49 34 49 68 0 50-37 76-96 76h-92V150Zm51 44v59h36c27 0 40-10 40-30 0-20-13-29-40-29h-36Zm0 101v78h42c29 0 43-13 43-39 0-26-15-39-44-39h-41Z"/>
+    <path fill="#FF5C5C" d="M105 137c6-10 18-3 18 6 0 6-6 11-13 16-7-5-13-10-13-16 0-9 12-16 18-6 1-4 4-7 6-10 3 3 5 6 7 10Z"/>
+  </g>
+  <rect x="72" y="580" width="160" height="8" rx="4" fill="#FF5C5C"/>
+</svg>

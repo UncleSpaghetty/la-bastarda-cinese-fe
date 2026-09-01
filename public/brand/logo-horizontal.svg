@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 256">
+  <defs>
+    <path id="letter-a" d="M3 68 21 3l18 65M10 44h23"/>
+    <path id="letter-b" d="M5 3v65M5 3h17c22 0 22 31 0 31H5m17 0c25 0 25 34 0 34H5"/>
+    <path id="letter-c" d="M41 11C31-7 4 2 4 35s27 43 37 24"/>
+    <path id="letter-d" d="M5 3v65h15c31 0 31-65 0-65H5Z"/>
+    <path id="letter-e" d="M39 3H5v65h34M5 34h28"/>
+    <path id="letter-i" d="M3 3h36M21 3v65M3 68h36"/>
+    <path id="letter-l" d="M5 3v65h35"/>
+    <path id="letter-n" d="M5 68V3l35 65V3"/>
+    <path id="letter-r" d="M5 68V3h17c22 0 22 31 0 31H5m17 0 21 34"/>
+    <path id="letter-s" d="M39 10C31-1 9-1 5 14c-5 19 35 13 34 35-1 19-27 24-38 11"/>
+    <path id="letter-t" d="M1 3h40M21 3v65"/>
+  </defs>
+  <g transform="translate(10 20) scale(.42)">
+    <g transform="rotate(-8 220 258)"><rect x="72" y="68" width="304" height="382" rx="42" fill="#5B4BDB"/></g>
+    <g transform="rotate(6 286 256)">
+      <path fill="#FF5C5C" d="M174 58h218c24 0 42 18 42 42v207l-17 17 17 18v72c0 24-18 42-42 42H174c-24 0-42-18-42-42V100c0-24 18-42 42-42Z"/>
+      <path fill="#F8F4EC" fill-rule="evenodd" d="M197 150h92c55 0 86 24 86 66 0 27-14 47-39 58 31 10 49 34 49 68 0 50-37 76-96 76h-92V150Zm51 44v59h36c27 0 40-10 40-30 0-20-13-29-40-29h-36Zm0 101v78h42c29 0 43-13 43-39 0-26-15-39-44-39h-41Z"/>
+      <path fill="#5B4BDB" d="M331 323c8-13 23-4 23 7 0 8-7 14-16 20-9-6-16-12-16-20 0-11 15-20 23-7 2-5 5-9 8-13 3 4 6 8 8 13Zm7 23c2 14 8 21 18 27h-36c10-6 16-13 18-27Z"/>
+      <path fill="#5B4BDB" d="m193 145 4-45 24 24 21-38 17 41 29-19-8 48h-82l-5-11Z" transform="rotate(-10 236 139)"/>
+      <rect x="198" y="153" width="82" height="13" rx="6.5" fill="#5B4BDB" transform="rotate(-10 236 139)"/>
+    </g>
+  </g>
+  <g fill="none" stroke="#F8F4EC" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <g transform="translate(268 38) scale(.54)"><use href="#letter-l"/><use href="#letter-a" transform="translate(54)"/></g>
+    <g transform="translate(268 110)">
+      <use href="#letter-b"/><use href="#letter-a" transform="translate(50)"/><use href="#letter-s" transform="translate(100)"/><use href="#letter-t" transform="translate(150)"/><use href="#letter-a" transform="translate(200)"/><use href="#letter-r" transform="translate(250)"/><use href="#letter-d" transform="translate(300)"/><use href="#letter-a" transform="translate(350)"/>
+      <use href="#letter-c" transform="translate(422)"/><use href="#letter-i" transform="translate(472)"/><use href="#letter-n" transform="translate(522)"/><use href="#letter-e" transform="translate(572)"/><use href="#letter-s" transform="translate(622)"/><use href="#letter-e" transform="translate(672)"/>
+    </g>
+  </g>
+</svg>

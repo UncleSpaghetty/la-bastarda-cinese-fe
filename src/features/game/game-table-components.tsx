@@ -24,7 +24,7 @@ export function GameHeader({ matchId, phase, activeName, deadline, isOwnTurn, on
 }) {
   return <header className="game-header">
     <button className="game-icon-button" type="button" onClick={onBack} aria-label="Torna alla lobby"><ChevronLeft /></button>
-    <div className="game-brand"><span aria-hidden="true">B</span><strong>La bastarda cinese</strong></div>
+    <div className="game-brand"><img src="/brand/logo-mark.svg" width="32" height="32" alt="" aria-hidden="true" /><strong>La bastarda cinese</strong></div>
     <div className="game-room-meta"><span>#{matchId.slice(0, 8)}</span><b>{phaseLabel[phase] ?? phase}</b></div>
     <div className={`game-turn-summary ${isOwnTurn ? "is-own" : ""}`}>
       <p>{isOwnTurn ? "Tocca a te" : <>Turno di <strong>{activeName ?? "—"}</strong></>}</p>

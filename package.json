@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --configLoader runner",
     "preview": "vite preview --configLoader runner --host 127.0.0.1 --port 4173",
-    "build": "tsc -b && vite build --configLoader runner",
+    "generate:brand": "node scripts/generate-brand-assets.mjs",
+    "build": "node scripts/validate-public-config.mjs && tsc -b && vite build --configLoader runner && node scripts/generate-public-metadata.mjs && node scripts/verify-seo-assets.mjs",
     "lint": "eslint .",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run --config vitest.config.ts",
