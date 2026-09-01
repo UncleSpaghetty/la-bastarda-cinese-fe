@@ -34,7 +34,7 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
     credentials: "include",
-    headers: { "Content-Type": "application/json", ...(csrf ? { "X-CSRFToken": csrf } : {}), ...init?.headers },
+    headers: { ...(init?.body instanceof FormData ? {} : { "Content-Type": "application/json" }), ...(csrf ? { "X-CSRFToken": csrf } : {}), ...init?.headers },
   });
   const body = response.status === 204 ? undefined : await response.json().catch(() => undefined);
   if (!response.ok) throw new ApiError(response.status, body);
